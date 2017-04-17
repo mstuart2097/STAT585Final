@@ -9,6 +9,7 @@ LazyData: TRUE
 Depends:
     ggplot2 (>= 2.2.1),
     dplyr (>= 0.4.0.1),
+    purrr,
     rvest,
     plotly
 RoxygenNote: 6.0.1
