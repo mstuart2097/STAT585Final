@@ -2,7 +2,7 @@ Package: ProjectNFL
 Type: Package
 Title: Simulating NFL Regular Season Standings and Visualization of the Results
 Version: 0.1.0
-Authors@R: person("Matt","Stuart",email="mstuart@iastate.edu")
+Authors@R: person("Matt","Stuart",role=c("aut"),email="mstuart@iastate.edu")
 Description: This is a package with multiple functions to scrape NFL game results from NFL.com, aggregate statistics, calculate head to head and common games results from the scores, break ties in win-loss record for both division and conference, determine rankings in both the division and the conference, and simulate final conference rankings and visualize those results for a specific team.  The main functions of this packages are ```NFLSim``` and ```SeedPlot``` as these run the simulations as specified earlier and make a bar plot of the frequency of seeds for a user-specified team.
 License: GNU General Public License Version 2
 LazyData: TRUE
