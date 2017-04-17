@@ -714,8 +714,9 @@ NFLSim <- function(Games=NULL,sims=100,data=WeeklyUpdate()){
 #'@return A plotly bar graph showing the frequency of times a teams obtains a specific seed in the conference based on the simulation settings.
 #'Because the graph is a plotly, the user can hover over a specific part of the graph to show the specific seed and the frequency that goes along with it.
 #' @examples
-#' NFLSim()
-#' NFLSim(sims=1000)
+#' SeedPlot()
+#' SeedPlot(TeamX="Raiders")
+#' SeedPlot(TeamX="Raiders",Sim=NFLSim(data=WeeklyUpdate(16)))                         
 SeedPlot <- function(TeamX="Bills",Sim=NFLSim(data=WeeklyUpdate())){
   require(dplyr)
   require(ggplot2)
