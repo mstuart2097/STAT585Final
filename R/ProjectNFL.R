@@ -1,6 +1,3 @@
-library(rvest)
-library(tidyverse)
-
 #'@title NFLTeams
 #'@description Tiebreaking Data for the 32 teams in the National Football League
 #' The dataset containing necessary information for tiebreaking procedures.  The statistics can be updated using the UpdateData function
@@ -86,7 +83,7 @@ WeeklyScores <- function(Week=1){
 #' @source \url{"http://www.nfl.com/schedules/2016"}
 WeeklyGames <- function(Week=1){
   require(rvest)
-  require(tidyverse)
+  require(dplyr)
   url <- paste("http://www.nfl.com/schedules/2016/REG",Week,sep="")
   html <- read_html(url)
   NFL <- html %>% html_nodes(".schedules-list-date,.time,.team-name") %>% html_text()
@@ -122,7 +119,7 @@ WeeklyGames <- function(Week=1){
 #' @source \url{"http://www.nfl.com/schedules/2016"}
 WeeklyUpdate <- function(WeekID=17){
   require(rvest)
-  require(tidyverse)
+  require(dplyr)
   if (WeekID==17){
     Weeks <- data.frame(Week=c(1:WeekID))
     Scores <- Weeks %>% mutate(Scores = Week %>% map(WeeklyScores))
@@ -488,6 +485,7 @@ FourTieDiv <- function(Team1,Team2,Team3,Team4,scores=WeeklyUpdate()){
 }
 #' @rdname Division
 FinalDivRank <- function(scores=WeeklyUpdate()) {
+  require(dplyr)
   data <- UpdateTeams(scores)
   tmp <- data %>%
     nest(-Division) %>%
@@ -612,8 +610,7 @@ FourTieConf <- function(Team1,Team2,Team3,Team4,scores=WeeklyUpdate()){
 }
 #' @rdname Conference
 FinalRank <- function(scores=WeeklyUpdate()){
-  require(rvest)
-  require(tidyverse)
+  require(dplyr)
   data=UpdateTeams(scores)
   tmp <- FinalDivRank(scores=scores)
   tmp$DivRank2 <- sapply(tmp$DivRank,function(x){min(x,2)})
@@ -658,7 +655,7 @@ FinalRank <- function(scores=WeeklyUpdate()){
 #' NFLSim(Games="Cardinals13Rams17",sims=10)
 NFLSim <- function(Games=NULL,sims=100,data=WeeklyUpdate()){
   require(rvest)
-  require(tidyverse)
+  require(dplyr)
   rawscore <- data %>% gather(key="ID",value="Team",c(3,5)) %>% mutate(Score=ifelse(ID=="AwayTeam",AwayScore,HomeScore)) %>% select(Team,Score)
   rawagainst <- data %>% gather(key="ID",value="Team",c(3,5)) %>% mutate(Score=ifelse(ID=="AwayTeam",HomeScore,AwayScore)) %>% select(Team,Score)
   statsscore <- rawscore %>% group_by(Team) %>% summarise(mean=mean(Score,na.rm=TRUE),sd=sd(Score,na.rm=TRUE))
@@ -720,7 +717,8 @@ NFLSim <- function(Games=NULL,sims=100,data=WeeklyUpdate()){
 #' NFLSim()
 #' NFLSim(sims=1000)
 SeedPlot <- function(TeamX="Bills",Sim=NFLSim(data=WeeklyUpdate())){
-  require(tidyverse)
+  require(dplyr)
+  require(ggplot2)
   require(plotly)
   t <- Sim %>% filter(Team==TeamX) %>% select(-Team)
   count <- sapply(c(1:16),function(x){length(which(t==x))})
