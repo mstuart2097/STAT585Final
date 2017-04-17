@@ -728,5 +728,5 @@ SeedPlot <- function(TeamX="Bills",Sim=NFLSim(data=WeeklyUpdate()),Plotly=TRUE){
   gg <- ggplot(num,aes(x=seed,y=count))+geom_bar(stat="identity")+
     xlab("Seed")+ylab("Frequency")+ggtitle(paste("Seeding Plot of",TeamX))+
     theme(plot.title = element_text(hjust = 0.5))
-  if(Plotly=TRUE) {ggplotly(gg)} else {gg}
+  if(Plotly==TRUE) {ggplotly(gg)} else {gg}
 }
