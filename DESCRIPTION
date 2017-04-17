@@ -7,9 +7,7 @@ Description: This is a package with multiple functions to scrape NFL game result
 License: GNU General Public License Version 2
 LazyData: TRUE
 Depends:
-    ggplot2 (>= 2.2.1),
-    dplyr (>= 0.4.0.1),
-    purrr,
+    tidyverse,
     rvest,
     plotly
 RoxygenNote: 6.0.1
