@@ -711,13 +711,14 @@ NFLSim <- function(Games=NULL,sims=100,data=WeeklyUpdate()){
 #'@description This is a function that will take an output from the \code{NFLSim} function and create a plotly of the seeding outcomes from the simulation
 #'@param TeamX The specific team wanting to be analyzed in the graph
 #'@param Sim The simulation data set used from the \code{NFLSim} function
-#'@return A plotly bar graph showing the frequency of times a teams obtains a specific seed in the conference based on the simulation settings.
-#'Because the graph is a plotly, the user can hover over a specific part of the graph to show the specific seed and the frequency that goes along with it.
+#'@param Plotly An identifier to determine whether or not the user wants the graph to be a plotly
+#'@return A (plotly) bar graph showing the frequency of times a teams obtains a specific seed in the conference based on the simulation settings.
+#'If the graph is a plotly, the user can hover over a specific part of the graph to show the specific seed and the frequency that goes along with it.
 #' @examples
 #' SeedPlot()
 #' SeedPlot(TeamX="Raiders")
 #' SeedPlot(TeamX="Raiders",Sim=NFLSim(data=WeeklyUpdate(16)))                         
-SeedPlot <- function(TeamX="Bills",Sim=NFLSim(data=WeeklyUpdate())){
+SeedPlot <- function(TeamX="Bills",Sim=NFLSim(data=WeeklyUpdate()),Plotly=TRUE){
   require(tidyverse)
   require(plotly)
   t <- Sim %>% filter(Team==TeamX) %>% select(-Team)
@@ -727,5 +728,5 @@ SeedPlot <- function(TeamX="Bills",Sim=NFLSim(data=WeeklyUpdate())){
   gg <- ggplot(num,aes(x=seed,y=count))+geom_bar(stat="identity")+
     xlab("Seed")+ylab("Frequency")+ggtitle(paste("Seeding Plot of",TeamX))+
     theme(plot.title = element_text(hjust = 0.5))
-  ggplotly(gg)
+  if(Plotly=TRUE) {ggplotly(gg)} else {gg}
 }
