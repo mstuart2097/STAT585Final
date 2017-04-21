@@ -1,0 +1,201 @@
+---
+title: "Stat 585X -- Final Project"
+author: "Matt Stuart"
+ratio: 16x10
+output:
+  rmdshower::shower_presentation:
+    self_contained: false
+    katex: true
+    theme: material
+---
+```{r setup, include=FALSE, message=FALSE, warning = FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+# Simulating NFL Playoff Teams by Game Results
+
+## National Football League
+
+- 32 Teams broken down into 2 Conferences of 16 Teams each
+- Each Conference Broken down into 4 Divisions of 4 Teams
+- 6 Teams in Each Conference Make the Playoffs
+
+## Playoff Seed Breakdown
+- The division champion with the best record 
+- The division champion with the second-best record
+- The division champion with the third-best record
+- The division champion with the fourth-best record
+- The non-division champion with the best record (Wild Card 1)
+- The non-division champion with the second-best record (Wild Card 2)
+
+## Webscraping Functions
+
+```
+WeeklyScores <- function(Week=1){
+  require(rvest)
+  require(tidyverse)
+  url <- paste("http://www.nfl.com/schedules/2016/REG",Week,sep="")
+  html <- read_html(url)
+  NFL <- html %>% 
+    html_nodes(".schedules-list-date,.time,.away,.home") %>% 
+    html_text()
+  NFL <- gsub("\r","",gsub("\n","",gsub("\t","",NFL)))
+  Games <- length(which(NFL=="FINAL"))
+  for (i in 1:Games){
+    Date <- ifelse(NFL[(8*(i-1)+1)]!="FINAL",NFL[(8*(i-1)+1)],Date)
+    NFL <- if(i==1) {NFL} else if(NFL[(8*(i-1)+1)]==Date) {NFL} else 
+      {c(NFL[1:(8*(i-1))],Date,NFL[(8*(i-1)+1):(length(NFL))])}
+  }
+  tmp <- data.frame(matrix(NFL,nrow=Games,byrow=TRUE))
+  tmp <- tmp %>%
+    mutate(Date=as.character(X1),AwayTeam=as.character(X3),
+    AwayScore=as.numeric(as.character(X5)),HomeTeam=as.character(X8),
+    HomeScore=as.numeric(as.character(X6))) %>%
+    select(Date,AwayTeam,AwayScore,HomeTeam,HomeScore)
+  tmp
+}
+```
+
+## Webscraping Functions
+
+- ```WeeklyScores``` performs a similar task, but omits the scores
+- ```WeeklyUpdate``` combines all weeks into one table, and places ```NA``` where scores warrant
+
+## Statistics functions
+
+- ```UpdateTeams``` gathers statistics for breaking ties using data from the ```WeeklyUpdate``` function
+- ```HeadtoHead```, ```CommonGames```, and ```CommonGamesPoints``` are functions that require their own functions
+
+## Tiebreaking functions
+
+- ```TwoTieDiv```, ```ThreeTieDiv```, ```FourTieDiv``` break ties between teams in the same division
+- ```TwoTieConf```, ```ThreeTieConf```, ```FourTieConf``` break ties between teams in the same conference
+- ```FinalDivRank``` and ```FinalDiv``` aggregate the results of the tied teams into one table
+
+## NFLSim
+
+```
+NFLSim <- function(Games=NULL,sims=100,data=WeeklyUpdate()){
+  require(rvest)
+  require(tidyverse)
+  rawscore <- data %>% 
+      gather(key="ID",value="Team",c(3,5)) %>% 
+      mutate(Score=ifelse(ID=="AwayTeam",AwayScore,HomeScore)) %>% 
+      select(Team,Score)
+  rawagainst <- data %>% 
+      gather(key="ID",value="Team",c(3,5)) %>% 
+      mutate(Score=ifelse(ID=="AwayTeam",HomeScore,AwayScore)) %>% 
+      select(Team,Score)
+  statsscore <- rawscore %>% 
+        group_by(Team) %>% 
+        summarise(mean=mean(Score,na.rm=TRUE),sd=sd(Score,na.rm=TRUE))
+  statsagainst <- rawagainst %>% 
+        group_by(Team) %>% 
+        summarise(mean=mean(Score,na.rm=TRUE),sd=sd(Score,na.rm=TRUE))
+  tmp <- data
+  x <- Games
+```
+## NFLSim cont.
+```
+  if (is.null(x)==FALSE){
+    y <- gregexpr("s[^a-z]*[0-9]+",x)
+    Spot <- as.vector(y[[1]])
+    Lens <- attr(y[[1]],"match.length")
+    z <- matrix(c(Spot,Lens),nrow=2,byrow=TRUE)
+    z[2,] <- apply(z,2,function(x){x[2]=x[1]+x[2]})
+    z[2,ncol(z)] <- nchar(x)
+    a <- as.vector(c(0,z))
+    b <- 0
+    for (i in 1:(length(a)-1)) {
+      b[i] <- substr(x,a[i]+1,a[i+1])
+    }
+    b[seq_along(b)[seq_along(b) %% 2 ==0]] <- 
+      gsub("[^0-9]","",b[seq_along(b) %% 2 == 0])
+    c <- data.frame(matrix(b,ncol=4,byrow=TRUE))
+    colnames(c) <- c("AwayTeam","AwayScore","HomeTeam","HomeScore")
+```
+## NFLSim cont.
+```
+    for (j in 1:nrow(c)){
+      if (length(which(data$AwayTeam==c$AwayTeam[1] & 
+                  data$HomeTeam==c$HomeTeam[1] & 
+                  is.na(data$AwayScore))) == 0) {
+        stop(paste(
+        c$AwayTeam[1]," at ",c$HomeTeam[1],
+        " is not a game still remaining to be played.",sep=""))
+      }
+      tmp$AwayScore[tmp$AwayTeam==c$AwayTeam[j] & 
+                    tmp$HomeTeam==c$HomeTeam[j] & 
+                    is.na(tmp$AwayScore)] <- c$AwayScore[j]
+      tmp$HomeScore[tmp$AwayTeam==c$AwayTeam[j] & 
+                    tmp$HomeTeam==c$HomeTeam[j] & 
+                    is.na(tmp$HomeScore)] <- c$HomeScore[j]
+    }
+  }
+```
+
+## NFLSim cont.
+```
+  for (s in 1:sims){
+    tmp$AwayScore <- as.numeric(apply(dat[,3:6],1,function(x){
+      ifelse(is.na(x[2]),
+        max(round(rnorm(1,
+          mean=mean(c(statsscore$mean[statsscore$Team==x[1]],
+                      statsagainst$mean[statsagainst$Team==x[3]])),
+          sd=sqrt((statsscore$sd[statsscore$Team==x[1]]^2+
+                  (statsagainst$sd[statsagainst$Team==x[3]])^2)/4))),0)
+                  ,x[2])}))
+    tmp$HomeScore <- as.numeric(apply(dat[,3:6],1,function(x){
+      ifelse(is.na(x[4]),
+        max(round(rnorm(1,
+          mean=mean(c(statsscore$mean[statsscore$Team==x[3]],
+                      statsagainst$mean[statsagainst$Team==x[1]])),
+          sd=sqrt((statsscore$sd[statsscore$Team==x[3]]^2+
+                  (statsagainst$sd[statsagainst$Team==x[1]])^2)/4))),0)
+                  ,x[4])}))
+    tm3 <- FinalRank(scores=tmp)
+    y <- tm3 %>% select(Team,ConfRank)
+    if (s==1) {x<-y} else {x<-full_join(x,y,by="Team")}
+    tmp <- data
+  }
+  n <- c(1:sims)
+  colnames(x) <- c("Team",sapply(n,function(x){paste("Sim",x,sep="")}))
+  x
+}
+```
+
+## Example
+
+```{r message=FALSE,warning=FALSE,tidy=TRUE}
+set.seed(513)
+library(devtools)
+install_github("mstuart2097/STAT585Final")
+library(ProjectNFL)
+dat <- WeeklyUpdate(16)
+tmp <- NFLSim(data=dat)
+head(tmp[,c(1:11)])
+```
+
+## Graph Function
+```
+SeedPlot <- function(TeamX="Bills",Sim=NFLSim(data=WeeklyUpdate()),Plotly=TRUE){
+  require(tidyverse)
+  require(plotly)
+  t <- Sim %>% filter(Team==TeamX) %>% select(-Team)
+  count <- sapply(c(1:16),function(x){length(which(t==x))})
+  num <- data.frame(count)
+  num$seed <- c(1:16)
+  gg <- ggplot(num,aes(x=seed,y=count))+geom_bar(stat="identity")+
+    xlab("Seed")+ylab("Frequency")+ggtitle(paste("Seeding Plot of",TeamX))+
+    theme(plot.title = element_text(hjust = 0.5))
+  if(Plotly==TRUE) {ggplotly(gg)} else {gg}
+}
+```
+
+## Graph Example
+
+```{r message=FALSE,warning=FALSE,tidy=TRUE}
+SeedPlot(TeamX="Raiders",Sim=tmp,Plotly=TRUE)
+```
+
