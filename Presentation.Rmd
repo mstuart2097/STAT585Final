@@ -140,20 +140,22 @@ NFLSim <- function(Games=NULL,sims=100,data=WeeklyUpdate()){
   for (s in 1:sims){
     tmp$AwayScore <- as.numeric(apply(dat[,3:6],1,function(x){
       ifelse(is.na(x[2]),
-        max(round(rnorm(1,
-          mean=mean(c(statsscore$mean[statsscore$Team==x[1]],
-                      statsagainst$mean[statsagainst$Team==x[3]])),
-          sd=sqrt((statsscore$sd[statsscore$Team==x[1]]^2+
-                  (statsagainst$sd[statsagainst$Team==x[3]])^2)/4))),0)
-                  ,x[2])}))
+        ifelse(max(round(rnorm(1,
+          mean=mean(c(statsscore$mean[statsscore$Team==x[1]],statsagainst$mean[statsagainst$Team==x[3]])),
+          sd=sqrt((statsscore$sd[statsscore$Team==x[1]]^2+(statsagainst$sd[statsagainst$Team==x[3]])^2)/4))),0)==1,
+          2,
+          max(round(rnorm(1,
+          mean=mean(c(statsscore$mean[statsscore$Team==x[1]],statsagainst$mean[statsagainst$Team==x[3]])),
+          sd=sqrt((statsscore$sd[statsscore$Team==x[1]]^2+(statsagainst$sd[statsagainst$Team==x[3]])^2)/4))),0)),x[2])}))
     tmp$HomeScore <- as.numeric(apply(dat[,3:6],1,function(x){
       ifelse(is.na(x[4]),
-        max(round(rnorm(1,
-          mean=mean(c(statsscore$mean[statsscore$Team==x[3]],
-                      statsagainst$mean[statsagainst$Team==x[1]])),
-          sd=sqrt((statsscore$sd[statsscore$Team==x[3]]^2+
-                  (statsagainst$sd[statsagainst$Team==x[1]])^2)/4))),0)
-                  ,x[4])}))
+        ifelse(max(round(rnorm(1,
+          mean=mean(c(statsscore$mean[statsscore$Team==x[3]],statsagainst$mean[statsagainst$Team==x[1]])),
+          sd=sqrt((statsscore$sd[statsscore$Team==x[3]]^2+(statsagainst$sd[statsagainst$Team==x[1]])^2)/4))),0)==1,
+          2,
+          max(round(rnorm(1,
+          mean=mean(c(statsscore$mean[statsscore$Team==x[3]],statsagainst$mean[statsagainst$Team==x[1]])),
+          sd=sqrt((statsscore$sd[statsscore$Team==x[3]]^2+(statsagainst$sd[statsagainst$Team==x[1]])^2)/4))),0)),x[4])}))
     tm3 <- FinalRank(scores=tmp)
     y <- tm3 %>% select(Team,ConfRank)
     if (s==1) {x<-y} else {x<-full_join(x,y,by="Team")}
