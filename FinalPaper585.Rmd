@@ -95,7 +95,7 @@ NFLSim <- function(Games=NULL,sims=100,data=WeeklyUpdate()){
   tmp <- data
   x <- Games
   if (is.null(x)==FALSE){
-    y <- gregexpr("s[^a-z]*[0-9]+",x)
+    y <- gregexpr("s[^A-Za-z]*[0-9]+",x)
     Spot <- as.vector(y[[1]])
     Lens <- attr(y[[1]],"match.length")
     z <- matrix(c(Spot,Lens),nrow=2,byrow=TRUE)
