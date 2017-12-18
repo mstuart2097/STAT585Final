@@ -44,11 +44,11 @@
 #' @examples
 #' WeeklyScores()
 #' WeeklyScores(Week=2)
-#' @source \url{"http://www.nfl.com/schedules/2016"}
+#' @source \url{"http://www.nfl.com/schedules/2017"}
 WeeklyScores <- function(Week=1){
   require(rvest)
   require(tidyverse)
-  url <- paste("http://www.nfl.com/schedules/2016/REG",Week,sep="")
+  url <- paste("http://www.nfl.com/schedules/2017/REG",Week,sep="")
   html <- read_html(url)
   NFL <- html %>% html_nodes(".schedules-list-date,.time,.away,.home") %>% html_text()
   NFL <- gsub("\r","",gsub("\n","",gsub("\t","",NFL)))
@@ -80,11 +80,11 @@ WeeklyScores <- function(Week=1){
 #' @examples
 #' WeeklyGames()
 #' WeeklyGames(Week=2)
-#' @source \url{"http://www.nfl.com/schedules/2016"}
+#' @source \url{"http://www.nfl.com/schedules/2017"}
 WeeklyGames <- function(Week=1){
   require(rvest)
   require(tidyverse)
-  url <- paste("http://www.nfl.com/schedules/2016/REG",Week,sep="")
+  url <- paste("http://www.nfl.com/schedules/2017/REG",Week,sep="")
   html <- read_html(url)
   NFL <- html %>% html_nodes(".schedules-list-date,.time,.team-name") %>% html_text()
   NFL <- gsub("\r","",gsub("\n","",gsub("\t","",NFL)))
@@ -116,7 +116,7 @@ WeeklyGames <- function(Week=1){
 #' @examples
 #' WeeklyUpdate()
 #' WeeklyUpdate(Week=16)
-#' @source \url{"http://www.nfl.com/schedules/2016"}
+#' @source \url{"http://www.nfl.com/schedules/2017"}
 WeeklyUpdate <- function(WeekID=17){
   require(rvest)
   require(tidyverse)
