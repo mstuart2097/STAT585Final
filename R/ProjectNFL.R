@@ -154,7 +154,7 @@ WeeklyUpdate <- function(WeekID=17){
 #' UpdateTeams(WeeklyUpdate(16))
 UpdateTeams <- function(data = WeeklyUpdate()){
   data <- data[is.na(data$AwayScore)==FALSE,]
-  for (i in 1:80)
+  for (i in 1:80){
     HomeID <- grep(data$HomeTeam[i],data$HomeTeam)
     AwayID <- grep(data$HomeTeam[i],data$AwayTeam)
     StatID <- grep(data$HomeTeam[i],NFLTeams$Team)
