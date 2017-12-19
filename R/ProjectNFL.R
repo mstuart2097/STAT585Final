@@ -84,7 +84,6 @@ WeeklyScores <- function(Week=1){
 WeeklyGames <- function(Week=1){
   require(rvest)
   require(tidyverse)
-  require(stringr)
   url <- paste("http://www.nfl.com/schedules/2017/REG",Week,sep="")
   html <- read_html(url)
   NFL <- html %>% html_nodes(".schedules-list-date,.time,.team-name") %>% html_text()
