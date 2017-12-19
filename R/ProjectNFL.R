@@ -84,13 +84,16 @@ WeeklyScores <- function(Week=1){
 WeeklyGames <- function(Week=1){
   require(rvest)
   require(tidyverse)
+  require(stringr)
   url <- paste("http://www.nfl.com/schedules/2017/REG",Week,sep="")
   html <- read_html(url)
   NFL <- html %>% html_nodes(".schedules-list-date,.time,.team-name") %>% html_text()
   NFL <- gsub("\r","",gsub("\n","",gsub("\t","",NFL)))
-  Games <- length(which(NFL=="FINAL"))
+  if (NFL[1] == "Next Game") {NFL <- NFL[-c(1:4)]} else {NFL <- NFL}
+  NFL <- sapply(NFL,function(x){str_split(x,"View")[[1]][1]})
+  Games <- sum(str_count(NFL,":"))
   for (i in 1:Games){
-    Date <- ifelse(NFL[(4*(i-1)+1)]!="FINAL",NFL[(4*(i-1)+1)],Date)
+    Date <- ifelse(str_count(NFL[(4*(i-1)+1)],":")==0,NFL[(4*(i-1)+1)],Date)
     NFL <- if(i==1) {NFL} else if(NFL[(4*(i-1)+1)]==Date) {NFL} else {c(NFL[1:(4*(i-1))],Date,NFL[(4*(i-1)+1):(length(NFL))])}
   }
   tmp <- data.frame(matrix(NFL,nrow=Games,byrow=TRUE))
