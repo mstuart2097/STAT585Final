@@ -529,8 +529,8 @@ TwoTieConf <- function(Team1,Team2,scores=WeeklyUpdate()){
   data = UpdateTeams(scores)
   if(data$Division[data$Team==Team1]==data$Division[data$Team==Team2]) {stop("Team1 and Team2 are in same division.  Please use TwoTieDiv()")}
   tmp <- rbind(data[data$Team==Team1,],data[data$Team==Team2,])
-  Team1 <- (dat$HomeTeam[1:48][sapply(dat$HomeTeam[1:48],function(x){grepl(x,Team1)})==TRUE])[1]
-  Team2 <- (dat$HomeTeam[1:48][sapply(dat$HomeTeam[1:48],function(x){grepl(x,Team2)})==TRUE])[1]
+  Team1 <- (scores$HomeTeam[1:80][sapply(scores$HomeTeam[1:80],function(x){grepl(x,Team1)})==TRUE])[1]
+  Team2 <- (scores$HomeTeam[1:80][sapply(scores$HomeTeam[1:80],function(x){grepl(x,Team2)})==TRUE])[1]
   tmp2 <- (tmp$Wins+0.5*tmp$Ties)/(tmp$Wins+tmp$Losses+tmp$Ties)
   dt <- rank(-tmp2,ties.method="min")
   tmp2 <- c(HeadtoHead(Team1,Team2,data=scores),HeadtoHead(Team2,Team1,data=scores))
@@ -555,9 +555,9 @@ ThreeTieConf <- function(Team1,Team2,Team3,scores=WeeklyUpdate()){
   if(data$Division[data$Team==Team1]==data$Division[data$Team==Team3]) {stop("Team1 and Team3 are in same division.  Please use TwoTieDiv()")}
   if(data$Division[data$Team==Team2]==data$Division[data$Team==Team3]) {stop("Team2 and Team3 are in same division.  Please use TwoTieDiv()")}
   tmp <- rbind(data[data$Team==Team1,],data[data$Team==Team2,],data[data$Team==Team3,])
-  Team1 <- (dat$HomeTeam[1:48][sapply(dat$HomeTeam[1:48],function(x){grepl(x,Team1)})==TRUE])[1]
-  Team2 <- (dat$HomeTeam[1:48][sapply(dat$HomeTeam[1:48],function(x){grepl(x,Team2)})==TRUE])[1]
-  Team3 <- (dat$HomeTeam[1:48][sapply(dat$HomeTeam[1:48],function(x){grepl(x,Team3)})==TRUE])[1]
+  Team1 <- (scores$HomeTeam[1:80][sapply(scores$HomeTeam[1:80],function(x){grepl(x,Team1)})==TRUE])[1]
+  Team2 <- (scores$HomeTeam[1:80][sapply(scores$HomeTeam[1:80],function(x){grepl(x,Team2)})==TRUE])[1]
+  Team3 <- (scores$HomeTeam[1:80][sapply(scores$HomeTeam[1:80],function(x){grepl(x,Team3)})==TRUE])[1]
   tmp2 <- c(HeadtoHead(Team1,Team2,Team3,data=scores),HeadtoHead(Team2,Team1,Team3,data=scores),HeadtoHead(Team3,Team1,Team2,data=scores))
   dt <- sapply(tmp2,function(x){ifelse(x==2,1,ifelse(x==-2,3,1))})
   tmp2 <- (tmp$ConfWins+0.5*tmp$ConfTies)/(tmp$ConfWins+tmp$ConfLosses+tmp$ConfTies)
@@ -586,10 +586,10 @@ FourTieConf <- function(Team1,Team2,Team3,Team4,scores=WeeklyUpdate()){
   if(data$Division[data$Team==Team2]==data$Division[data$Team==Team4]) {stop("Team2 and Team4 are in same division.  Please use TwoTieDiv()")}
   if(data$Division[data$Team==Team3]==data$Division[data$Team==Team4]) {stop("Team3 and Team4 are in same division.  Please use TwoTieDiv()")}
   tmp <- rbind(data[data$Team==Team1,],data[data$Team==Team2,],data[data$Team==Team3,],data[data$Team==Team4,])
-  Team1 <- (dat$HomeTeam[1:48][sapply(dat$HomeTeam[1:48],function(x){grepl(x,Team1)})==TRUE])[1]
-  Team2 <- (dat$HomeTeam[1:48][sapply(dat$HomeTeam[1:48],function(x){grepl(x,Team2)})==TRUE])[1]
-  Team3 <- (dat$HomeTeam[1:48][sapply(dat$HomeTeam[1:48],function(x){grepl(x,Team3)})==TRUE])[1]
-  Team4 <- (dat$HomeTeam[1:48][sapply(dat$HomeTeam[1:48],function(x){grepl(x,Team4)})==TRUE])[1]
+  Team1 <- (scores$HomeTeam[1:80][sapply(scores$HomeTeam[1:80],function(x){grepl(x,Team1)})==TRUE])[1]
+  Team2 <- (scores$HomeTeam[1:80][sapply(scores$HomeTeam[1:80],function(x){grepl(x,Team2)})==TRUE])[1]
+  Team3 <- (scores$HomeTeam[1:80][sapply(scores$HomeTeam[1:80],function(x){grepl(x,Team3)})==TRUE])[1]
+  Team4 <- (scores$HomeTeam[1:80][sapply(scores$HomeTeam[1:80],function(x){grepl(x,Team4)})==TRUE])[1]
   tmp2 <- c(HeadtoHead(Team1,Team2,Team3,Team4,data=scores),HeadtoHead(Team2,Team1,Team3,Team4,data=scores),
             HeadtoHead(Team3,Team1,Team2,Team4,data=scores),HeadtoHead(Team4,Team1,Team2,Team3,data=scores))
   dt <- sapply(tmp2,function(x){ifelse(x==3,1,ifelse(x==-3,4,1))})
