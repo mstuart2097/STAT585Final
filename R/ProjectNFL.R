@@ -255,19 +255,19 @@ UpdateTeams <- function(data = WeeklyUpdate()){
 #' CommonGamesPts("Patriots","Dolphins","Bills","Jets")
 #' @export
 CommonGames <- function(Team1,Team2,Team3=NULL,Team4=NULL,data=WeeklyUpdate()){
-  for(i in 1:48){
+  for(i in 1:80){
     if (data$HomeTeam[i]==Team1) {break}
   }
-  for(j in 1:48){
+  for(j in 1:80){
     if (data$HomeTeam[j]==Team2) {break}
   }
   if (is.null(Team3)==FALSE){
-    for(k in 1:48){
+    for(k in 1:80){
       if (data$HomeTeam[k]==Team3) {break}
     }
   }
   if (is.null(Team4)==FALSE){
-    for(l in 1:48){
+    for(l in 1:80){
       if (data$HomeTeam[l]==Team4) {break}
     }
   }
@@ -301,19 +301,19 @@ CommonGames <- function(Team1,Team2,Team3=NULL,Team4=NULL,data=WeeklyUpdate()){
 }
 #' @rdname CommonGames
 CommonGamesPts <- function(Team1,Team2,Team3=NULL,Team4=NULL,data=WeeklyUpdate()){
-for(i in 1:48){
+for(i in 1:80){
   if (data$HomeTeam[i]==Team1) {break}
 }
-for(j in 1:48){
+for(j in 1:80){
   if (data$HomeTeam[j]==Team2) {break}
 }
 if (is.null(Team3)==FALSE){
-  for(k in 1:48){
+  for(k in 1:80){
     if (data$HomeTeam[k]==Team3) {break}
   }
 }
 if (is.null(Team4)==FALSE){
-  for(l in 1:48){
+  for(l in 1:80){
     if (data$HomeTeam[l]==Team4) {break}
   }
 }
@@ -356,7 +356,7 @@ ifelse(length(which(IDs == TRUE))<=4,0,CG)
 #' HeadtoHead("Vikings","Packers","Bears","Lions")
 #' @export
 HeadtoHead <- function(Team1,Team2,Team3=NULL,Team4=NULL,data=WeeklyUpdate()){
-for(i in 1:48){
+for(i in 1:80){
   if (data$HomeTeam[i]==Team1) {break}
 }
 Games1 <- c(NFLTeams$Team[sapply(data$HomeTeam[grep(data$HomeTeam[i],data$AwayTeam)],function(x){grep(x,NFLTeams$Team)})],
