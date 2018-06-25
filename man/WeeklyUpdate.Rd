@@ -12,13 +12,14 @@
  \item{HomeScore}{The points scored by the home team in the game (\code{NA} if score is not to be recorded)}
 }}
 \source{
-\url{"http://www.nfl.com/schedules/2016"}
+\url{"http://www.nfl.com/schedules"}
 }
 \usage{
-WeeklyUpdate(WeekID = 17)
+WeeklyUpdate(Year=2017,WeekID = 17)
 }
 \arguments{
 \item{Week}{the identifier for the latest week of games played you want (Default is 17)}
+\item{Year}{the identifier for the year of data you want (Default is 2017)}
 }
 \value{
 A dataset of Scores and Games according to the format description
