@@ -31,6 +31,7 @@
 #'@title WeeklyScores
 #'@description This is a function that will update the scores from the specified week from NFL.com
 #'@param Week the identifier for the week of scores you want (Default is 1)
+#'@param Year the identifier for the year of scores you want (Default is 2017)
 #'@export
 #'@return A dataset of Scores of games according to the format description
 #'@format A dataset containing a varying number of rows and 5 variables
@@ -44,12 +45,12 @@
 #' @examples
 #' WeeklyScores()
 #' WeeklyScores(Week=2)
-#' @source \url{"http://www.nfl.com/schedules/2017"}
-WeeklyScores <- function(Week=1){
+#' @source \url{"http://www.nfl.com/schedules"}
+WeeklyScores <- function(Year=2017,Week=1){
   require(rvest)
   require(tidyverse)
   require(stringr)
-  url <- paste("http://www.nfl.com/schedules/2017/REG",Week,sep="")
+  url <- paste("http://www.nfl.com/schedules/",Year,"/REG",Week,sep="")
   html <- read_html(url)
   NFL <- html %>% html_nodes(".schedules-list-date,.time,.away,.home") %>% html_text()
   NFL <- gsub("\r","",gsub("\n","",gsub("\t","",NFL)))
@@ -68,6 +69,7 @@ WeeklyScores <- function(Week=1){
 #'@title WeeklyGames
 #'@description This is a function that will gets games from weeks that you do not want to use the scores, or if the games have not yet been played that week
 #'@param Week the identifier for the week of games you want (Default is 1)
+#'@param Year the identifier for the year of scores you want (Default is 2017)
 #'@export
 #'@return A dataset of games according to the format description
 #'@format A dataset containing a varying number of rows and 5 variables
@@ -81,11 +83,11 @@ WeeklyScores <- function(Week=1){
 #' @examples
 #' WeeklyGames()
 #' WeeklyGames(Week=2)
-#' @source \url{"http://www.nfl.com/schedules/2017"}
-WeeklyGames <- function(Week=1){
+#' @source \url{"http://www.nfl.com/schedules"}
+WeeklyGames <- function(Year=2017,Week=1){
   require(rvest)
   require(tidyverse)
-  url <- paste("http://www.nfl.com/schedules/2017/REG",Week,sep="")
+  url <- paste("http://www.nfl.com/schedules/",Year,"/REG",Week,sep="")
   html <- read_html(url)
   NFL <- html %>% html_nodes(".schedules-list-date,.time,.team-name") %>% html_text()
   NFL <- gsub("\r","",gsub("\n","",gsub("\t","",NFL)))
@@ -106,6 +108,7 @@ WeeklyGames <- function(Week=1){
 #'@title WeeklyUpdate
 #'@description This is a function that will gets all games for the season, with games being played from WeeklyScores and games yet to be played from WeeklyGames
 #'@param Week the identifier for the latest week of games played you want (Default is 17)
+#'@param Year the identifier for the year of data you want (Default is 2017)
 #'@export
 #'@return A dataset of Scores and Games according to the format description
 #'@format A dataset containing a varying number of rows and 5 variables
@@ -119,26 +122,26 @@ WeeklyGames <- function(Week=1){
 #' @examples
 #' WeeklyUpdate()
 #' WeeklyUpdate(Week=16)
-#' @source \url{"http://www.nfl.com/schedules/2017"}
-WeeklyUpdate <- function(WeekID=17){
+#' @source \url{"http://www.nfl.com/schedules"}
+WeeklyUpdate <- function(Year=2017,WeekID=17){
   require(rvest)
   require(tidyverse)
   if (WeekID==17){
     Weeks <- data.frame(Week=c(1:WeekID))
-    Scores <- Weeks %>% mutate(Scores = Week %>% map(WeeklyScores))
+    Scores <- Weeks %>% mutate(Scores = Week %>% map(WeeklyScores(Year=Year)))
     FinalScores <- Scores %>% unnest
     FinalScores
   } else if (WeekID==0) {
     Weeks <- data.frame(Week=c((WeekID+1):17))
-    Games <- Weeks %>% mutate(Games = Week %>% map(WeeklyGames))
+    Games <- Weeks %>% mutate(Games = Week %>% map(WeeklyGames(Year=Year)))
     RemainingGames <- Games %>% unnest
     RemainingGames %>% mutate(AwayScore=as.integer(AwayScore),HomeScore=as.integer(HomeScore))
   } else {
     Weeks <- data.frame(Week=c(1:WeekID))
-    Scores <- Weeks %>% mutate(Scores = Week %>% map(WeeklyScores))
+    Scores <- Weeks %>% mutate(Scores = Week %>% map(WeeklyScores(Year=Year)))
     FinalScores <- Scores %>% unnest
     Weeks <- data.frame(Week=c((WeekID+1):17))
-    Games <- Weeks %>% mutate(Games = Week %>% map(WeeklyGames))
+    Games <- Weeks %>% mutate(Games = Week %>% map(WeeklyGames(Year=Year)))
     RemainingGames <- Games %>% unnest
     rbind(FinalScores,RemainingGames) %>% mutate(AwayScore=as.integer(AwayScore),HomeScore=as.integer(HomeScore))
   }
