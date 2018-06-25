@@ -12,13 +12,14 @@
  \item{HomeScore}{Automatically \code{NA}}
 }}
 \source{
-\url{"http://www.nfl.com/schedules/2016"}
+\url{"http://www.nfl.com/schedules"}
 }
 \usage{
-WeeklyGames(Week = 1)
+WeeklyGames(Year=2017,Week = 1)
 }
 \arguments{
 \item{Week}{the identifier for the week of games you want (Default is 1)}
+\item{Year}{the identifier for the year of games you want (Default is 2017)}
 }
 \value{
 A dataset of games according to the format description
