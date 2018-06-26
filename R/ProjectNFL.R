@@ -95,15 +95,16 @@ WeeklyGames <- function(Year=2017,Week=1){
   NFL <- sapply(NFL,function(x){str_split(x,"View")[[1]][1]})
   Games <- sum(str_count(NFL,":"))
   for (i in 1:Games){
-    Date <- ifelse(str_count(NFL[(4*(i-1)+1)],":")==0,NFL[(4*(i-1)+1)],Date)
-    NFL <- if(i==1) {NFL} else if(NFL[(4*(i-1)+1)]==Date) {NFL} else {c(NFL[1:(4*(i-1))],Date,NFL[(4*(i-1)+1):(length(NFL))])}
+    Date <- ifelse(str_count(NFL[(6*(i-1)+1)],":")==0,NFL[(6*(i-1)+1)],Date)
+    NFL <- if(i==1) {NFL} else if(NFL[(6*(i-1)+1)]==Date) {NFL} else {c(NFL[1:(6*(i-1))],Date,NFL[(6*(i-1)+1):(length(NFL))])}
   }
   tmp <- data.frame(matrix(NFL,nrow=Games,byrow=TRUE))
   tmp <- tmp %>%
-    mutate(Date=as.character(X1),AwayTeam=as.character(X3),AwayScore=rep("",Games),HomeTeam=as.character(X4),HomeScore=rep("",Games)) %>%
+    mutate(Date=as.character(X1),AwayTeam=as.character(X3),AwayScore=rep("",Games),HomeTeam=as.character(X6),HomeScore=rep("",Games)) %>%
     select(Date,AwayTeam,AwayScore,HomeTeam,HomeScore)
   tmp
 }
+
 
 #'@title WeeklyUpdate
 #'@description This is a function that will gets all games for the season, with games being played from WeeklyScores and games yet to be played from WeeklyGames
