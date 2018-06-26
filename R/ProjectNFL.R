@@ -89,7 +89,7 @@ WeeklyGames <- function(Year=2017,Week=1){
   require(tidyverse)
   url <- paste("http://www.nfl.com/schedules/",Year,"/REG",Week,sep="")
   html <- read_html(url)
-  NFL <- html %>% html_nodes(".schedules-list-date,.time,.team-name") %>% html_text()
+  NFL <- html %>% html_nodes(".time,.away,.home,.schedules-list-date") %>% html_text()
   NFL <- gsub("\r","",gsub("\n","",gsub("\t","",NFL)))
   if (NFL[1] == "Next Game") {NFL <- NFL[-c(1:4)]} else {NFL <- NFL}
   NFL <- sapply(NFL,function(x){str_split(x,"View")[[1]][1]})
