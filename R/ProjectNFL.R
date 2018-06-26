@@ -91,7 +91,7 @@ WeeklyGames <- function(Year=2017,Week=1){
   html <- read_html(url)
   NFL <- html %>% html_nodes(".time,.away,.home,.schedules-list-date") %>% html_text()
   NFL <- gsub("\r","",gsub("\n","",gsub("\t","",NFL)))
-  if (NFL[1] == "Next Game") {NFL <- NFL[-c(1:4)]} else {NFL <- NFL}
+  NFL <- NFL[-1]
   NFL <- sapply(NFL,function(x){str_split(x,"View")[[1]][1]})
   Games <- sum(str_count(NFL,":"))
   for (i in 1:Games){
