@@ -127,21 +127,21 @@ WeeklyUpdate <- function(Year=2017,WeekID=17){
   require(rvest)
   require(tidyverse)
   if (WeekID==17){
-    Weeks <- data.frame(Week=c(1:WeekID))
-    Scores <- Weeks %>% mutate(Scores = Week %>% map(WeeklyScores))
+    Weeks <- data.frame(Year=rep(Year,WeekID),Week=c(1:WeekID))
+    Scores <- Weeks %>% mutate(Scores = map2(Year,Week,WeeklyScores))
     FinalScores <- Scores %>% unnest
     FinalScores
   } else if (WeekID==0) {
-    Weeks <- data.frame(Week=c((WeekID+1):17))
-    Games <- Weeks %>% mutate(Games = Week %>% map(WeeklyGames))
+    Weeks <- data.frame(Year=rep(Year,17-WeekID),Week=c((WeekID+1):17))
+    Games <- Weeks %>% mutate(Games = map2(Year,Week,WeeklyGames))
     RemainingGames <- Games %>% unnest
     RemainingGames %>% mutate(AwayScore=as.integer(AwayScore),HomeScore=as.integer(HomeScore))
   } else {
-    Weeks <- data.frame(Week=c(1:WeekID))
-    Scores <- Weeks %>% mutate(Scores = Week %>% map(WeeklyScores))
+    Weeks <- data.frame(Year=rep(Year,WeekID),Week=c(1:WeekID))
+    Scores <- Weeks %>% mutate(Scores = map2(Year,Week,WeeklyScores))
     FinalScores <- Scores %>% unnest
-    Weeks <- data.frame(Week=c((WeekID+1):17))
-    Games <- Weeks %>% mutate(Games = Week %>% map(WeeklyGames))
+    Weeks <- data.frame(Year=rep(Year,17-WeekID),Week=c((WeekID+1):17))
+    Games <- Weeks %>% mutate(Games = map2(Year,Week,WeeklyGames))
     RemainingGames <- Games %>% unnest
     rbind(FinalScores,RemainingGames) %>% mutate(AwayScore=as.integer(AwayScore),HomeScore=as.integer(HomeScore))
   }
