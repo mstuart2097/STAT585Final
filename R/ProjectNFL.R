@@ -52,7 +52,7 @@ WeeklyScores <- function(Year=2017,Week=1){
   require(stringr)
   url <- paste("http://www.nfl.com/schedules/",Year,"/REG",Week,sep="")
   html <- read_html(url)
-  NFL <- html %>% html_nodes(".schedules-list-date,.time,.away,.home") %>% html_text()
+  NFL <- html %>% html_nodes(".time,.away,.home,.schedules-list-date") %>% html_text()
   NFL <- gsub("\r","",gsub("\n","",gsub("\t","",NFL)))
   Games <- length(which(NFL=="FINAL"))
   for (i in 1:Games){
