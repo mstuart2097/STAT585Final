@@ -62,7 +62,7 @@ WeeklyScores <- function(Year=2017,Week=1){
   tmp <- data.frame(matrix(NFL,nrow=Games,byrow=TRUE))
   tmp <- tmp %>%
     mutate(Date=as.character(X1),AwayTeam=as.character(X3),AwayScore=as.numeric(as.character(X5)),HomeTeam=as.character(X8),HomeScore=as.numeric(as.character(X6))) %>%
-    select(Date,AwayTeam,AwayScore,HomeTeam,HomeScore)
+    dplyr::select(Date,AwayTeam,AwayScore,HomeTeam,HomeScore)
   tmp
 }
 
@@ -101,7 +101,7 @@ WeeklyGames <- function(Year=2017,Week=1){
   tmp <- data.frame(matrix(NFL,nrow=Games,byrow=TRUE))
   tmp <- tmp %>%
     mutate(Date=as.character(X1),AwayTeam=as.character(X3),AwayScore=rep("",Games),HomeTeam=as.character(X6),HomeScore=rep("",Games)) %>%
-    select(Date,AwayTeam,AwayScore,HomeTeam,HomeScore)
+    dplyr::select(Date,AwayTeam,AwayScore,HomeTeam,HomeScore)
   tmp
 }
 
