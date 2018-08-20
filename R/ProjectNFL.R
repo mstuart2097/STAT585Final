@@ -394,7 +394,11 @@ ThreeTieDiv <- function(Team1,Team2,Team3,scores,SimScores=NULL){
   dt <- if (sum(dt)!=3) {dt} else {rank(-tmp$SOV,ties.method="min")}
   dt <- if (sum(dt)!=3) {dt} else {rank(-tmp$SOS,ties.method="min")}
   du <- dt
-  du[du==2]<-TwoTieDiv((c(Team1,Team2,Team3)[du==2])[1],(c(Team1,Team2,Team3)[du==2])[2],scores,SimScores)+1
+  if (length(which(du==1))==2){
+    du[du==1]<-TwoTieDiv((c(Team1,Team2,Team3)[du==2])[1],(c(Team1,Team2,Team3)[du==2])[2],scores,SimScores)   
+  } else if (length(which(du==2))==2){
+    du[du==2]<-TwoTieDiv((c(Team1,Team2,Team3)[du==2])[1],(c(Team1,Team2,Team3)[du==2])[2],scores,SimScores)+1
+  } else {du <- du}
   du
 }
 #' @rdname Division
@@ -412,8 +416,19 @@ FourTieDiv <- function(Team1,Team2,Team3,Team4,scores,SimScores=NULL){
   dt <- if (sum(dt)!=4) {dt} else {rank(-tmp$SOV,ties.method="min")}
   dt <- if (sum(dt)!=4) {dt} else {rank(-tmp$SOS,ties.method="min")}
   du <- dt
-  du[du==2]<-ThreeTieDiv((c(Team1,Team2,Team3)[du==2])[1],(c(Team1,Team2,Team3)[du==2])[2],
-                         (c(Team1,Team2,Team3)[du==2])[3],scores,SimScores)+1
+  if (length(which(du==1))==3){
+    du[du==1] <- ThreeTieDiv((c(Team1,Team2,Team3,Team4)[du==1])[1],(c(Team1,Team2,Team3,Team4)[du==1])[2],
+                             (c(Team1,Team2,Team3,Team4)[du==1])[3],scores,SimScores)   
+  } else if (length(which(du==2))==3){
+    du[du==2] <- ThreeTieDiv((c(Team1,Team2,Team3,Team4)[du==2])[1],(c(Team1,Team2,Team3,Team4)[du==2])[2],
+                             (c(Team1,Team2,Team3,Team4)[du==2])[3],scores,SimScores)+1
+  } else if (length(which(du==1))==2){
+    du[du==1] <- TwoTieDiv((c(Team1,Team2,Team3,Team4)[du==1])[1],(c(Team1,Team2,Team3,Team4)[du==1])[2],scores,SimScores)
+  } else if (length(which(du==2))==2){
+    du[du==2] <- TwoTieDiv((c(Team1,Team2,Team3,Team4)[du==2])[1],(c(Team1,Team2,Team3,Team4)[du==2])[2],scores,SimScores)+1
+  } else if (length(which(du==3))==2){
+    du[du==3] <- TwoTieDiv((c(Team1,Team2,Team3,Team4)[du==3])[1],(c(Team1,Team2,Team3,Team4)[du==3])[2],scores,SimScores)+2
+  } else {du <- du}
   du
 }
 #' @rdname Division
