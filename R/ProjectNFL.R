@@ -374,11 +374,6 @@ TwoTieDiv <- function(Team1,Team2,scores,SimScores=NULL){
   dt <- if (sum(dt)!=2) {dt} else {rank(-tmp$SOV,ties.method="min")}
   dt <- if (sum(dt)!=2) {dt} else {rank(-tmp$SOS,ties.method="min")}
   du <- dt
-  du <- if (sum(du)!=2) {du} else {rank(-tmp$ConfPtRank,ties.method="min")}
-  du <- if (sum(du)!=2) {du} else {rank(-tmp$AllPtRank,ties.method="min")}
-  tmp2 <- c(CommonGamesPts(Team1,Team2,data=scores),CommonGamesPts(Team2,Team1,data=scores))
-  du <- if (sum(du)!=2) {du} else {rank(-tmp2,ties.method="min")}
-  du <- if (sum(du)!=2) {du} else {rank(tmp$AllPtAllowed-tmp$AllPtScored,ties.method="first")}
   du
 }
 #' @rdname Division
@@ -397,14 +392,6 @@ ThreeTieDiv <- function(Team1,Team2,Team3,scores,SimScores=NULL){
   dt <- if (sum(dt)!=3) {dt} else {rank(-tmp$SOV,ties.method="min")}
   dt <- if (sum(dt)!=3) {dt} else {rank(-tmp$SOS,ties.method="min")}
   du <- dt
-  du <- if (sum(du)!=3) {du} else {rank(-tmp$ConfPtRank,ties.method="min")}
-  du <- if (sum(du)!=3) {du} else {rank(-tmp$AllPtRank,ties.method="min")}
-  tmp2 <- c(CommonGamesPts(Team1,Team2,Team3,data=scores),CommonGamesPts(Team2,Team1,Team3,data=scores),
-            CommonGamesPts(Team3,Team1,Team2,data=scores))
-  du <- if (sum(du)!=3) {du} else {rank(-tmp2,ties.method="min")}
-  du <- if (sum(du)!=3) {du} else {rank(tmp$AllPtAllowed-tmp$AllPtScored,ties.method="first")}
-  if(length(which(du==1))==2) {du[du==1]<-TwoTieDiv((c(Team1,Team2,Team3)[x==1])[1],(c(Team1,Team2,Team3)[x==1])[2])} else {du <- du}
-  du <- sapply(du,function(x){min(x,2)})
   du[du==2]<-TwoTieDiv((c(Team1,Team2,Team3)[x==2])[1],(c(Team1,Team2,Team3)[x==2])[2])+1
   du
 }
@@ -422,15 +409,6 @@ FourTieDiv <- function(Team1,Team2,Team3,Team4,scores,SimScores=NULL){
   dt <- if (sum(dt)!=4) {dt} else {rank(-tmp$SOV,ties.method="min")}
   dt <- if (sum(dt)!=4) {dt} else {rank(-tmp$SOS,ties.method="min")}
   du <- dt
-  du <- if (sum(du)!=4) {du} else {rank(-tmp$ConfPtRank,ties.method="min")}
-  du <- if (sum(du)!=4) {du} else {rank(-tmp$AllPtRank,ties.method="min")}
-  tmp2 <- c(CommonGamesPts(Team1,Team2,Team3,Team4,data=scores),CommonGamesPts(Team2,Team1,Team3,Team4,data=scores),
-            CommonGamesPts(Team3,Team1,Team2,Team4,data=scores),CommonGamesPts(Team4,Team1,Team2,Team3,data=scores))
-  du <- if (sum(du)!=4) {du} else {rank(-tmp2,ties.method="min")}
-  du <- if (sum(du)!=4) {du} else {rank(tmp$AllPtAllowed-tmp$AllPtScored,ties.method="first")}
-  if(length(which(du==1))==3) {du[du==1]<-ThreeTieDiv((c(Team1,Team2,Team3,Team4)[x==1])[1],(c(Team1,Team2,Team3,Team4)[x==1])[2],
-                                                      (c(Team1,Team2,Team3,Team4)[x==1])[3])} else {du <- du}
-  du <- sapply(du,function(x){min(x,2)})
   du[du==2]<-ThreeTieDiv((c(Team1,Team2,Team3)[x==2])[1],(c(Team1,Team2,Team3)[x==2])[2],
                          (c(Team1,Team2,Team3)[x==2])[3])+1
   du
@@ -491,10 +469,6 @@ TwoTieConf <- function(Team1,Team2,scores,SimScores=NULL){
   dt <- if (sum(dt)!=2) {dt} else {rank(-tmp$SOV,ties.method="min")}
   dt <- if (sum(dt)!=2) {dt} else {rank(-tmp$SOS,ties.method="min")}
   du <- dt
-  du <- if (sum(du)!=2) {du} else {rank(-tmp$ConfPtRank,ties.method="min")}
-  du <- if (sum(du)!=2) {du} else {rank(-tmp$AllPtRank,ties.method="min")}
-  du <- if (sum(du)!=2) {du} else {rank(tmp$ConfPtAllowed-tmp$ConfPtScored,ties.method="min")}
-  du <- if (sum(du)!=2) {du} else {rank(tmp$AllPtAllowed-tmp$AllPtScored,ties.method="first")}
   du
 }
 #' @rdname Conference
@@ -517,11 +491,6 @@ ThreeTieConf <- function(Team1,Team2,Team3,scores,SimScores=NULL){
   dt <- if (sum(dt)!=3) {dt} else {rank(-tmp$SOV,ties.method="min")}
   dt <- if (sum(dt)!=3) {dt} else {rank(-tmp$SOS,ties.method="min")}
   du <- dt
-  du <- if (sum(du)!=3) {du} else {rank(-tmp$ConfPtRank,ties.method="min")}
-  du <- if (sum(du)!=3) {du} else {rank(-tmp$AllPtRank,ties.method="min")}
-  du <- if (sum(du)!=3) {du} else {rank(tmp$ConfPtAllowed-tmp$ConfPtScored,ties.method="min")}
-  du <- if (sum(du)!=3) {du} else {rank(tmp$AllPtAllowed-tmp$AllPtScored,ties.method="first")}
-  if(length(which(du==1))==2) {du[du==1]<-TwoTieConf((c(Team1,Team2,Team3)[du==1])[1],(c(Team1,Team2,Team3)[du==1])[2])} else {du <- du}
   du[du>=2] <- 2
   du
 }
@@ -550,13 +519,6 @@ FourTieConf <- function(Team1,Team2,Team3,Team4,scores,SimScores){
   dt <- if (sum(dt)!=4) {dt} else {rank(-tmp$SOV,ties.method="min")}
   dt <- if (sum(dt)!=4) {dt} else {rank(-tmp$SOS,ties.method="min")}
   du <- dt
-  du <- if (sum(du)!=4) {du} else {rank(-tmp$ConfPtRank,ties.method="min")}
-  du <- if (sum(du)!=4) {du} else {rank(-tmp$AllPtRank,ties.method="min")}
-  du <- if (sum(du)!=4) {du} else {rank(tmp$ConfPtAllowed-tmp$ConfPtScored,ties.method="min")}
-  du <- if (sum(du)!=4) {du} else {rank(tmp$AllPtAllowed-tmp$AllPtScored,ties.method="first")}
-  if(length(which(du==1))==3) {du[du==1]<-ThreeTieConf((c(Team1,Team2,Team3,Team4)[du==1])[1],(c(Team1,Team2,Team3,Team4)[du==1])[2],
-                                                       (c(Team1,Team2,Team3,Team4)[du==1])[3])} else
-                                                         if(length(which(du==1))==2) {du[du==1]<-TwoTieConf((c(Team1,Team2,Team3,Team4)[du==1])[1],(c(Team1,Team2,Team3,Team4)[du==1])[2])} else {du <- du}
   du[du>=2] <- 2
   du
 }
