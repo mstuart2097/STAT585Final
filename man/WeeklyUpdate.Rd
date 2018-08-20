@@ -15,11 +15,12 @@
 \url{"http://www.nfl.com/schedules"}
 }
 \usage{
-WeeklyUpdate(Year=2017,WeekID = 17)
+WeeklyUpdate(Year = 2017, WeekID = 17)
 }
 \arguments{
-\item{Week}{the identifier for the latest week of games played you want (Default is 17)}
 \item{Year}{the identifier for the year of data you want (Default is 2017)}
+
+\item{Week}{the identifier for the latest week of games played you want (Default is 17)}
 }
 \value{
 A dataset of Scores and Games according to the format description

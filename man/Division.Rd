@@ -8,16 +8,18 @@
 \alias{FinalDivRank}
 \title{Division Tiebreakers}
 \usage{
-TwoTieDiv(Team1, Team2, scores = WeeklyUpdate())
+TwoTieDiv(Team1, Team2, scores, SimScores = NULL)
 
-ThreeTieDiv(Team1, Team2, Team3, scores = WeeklyUpdate())
+ThreeTieDiv(Team1, Team2, Team3, scores, SimScores = NULL)
 
-FourTieDiv(Team1, Team2, Team3, Team4, scores = WeeklyUpdate())
+FourTieDiv(Team1, Team2, Team3, Team4, scores, SimScores = NULL)
 
-FinalDivRank(scores = WeeklyUpdate())
+FinalDivRank(scores, SimScores = NULL)
 }
 \arguments{
 \item{scores}{the data frame of scores used for calculating \code{Head-to-Head}, \code{CommonGames}, and \code{CommonGamesPts}}
+
+\item{SimScores}{the simulated scores, if a simulation was performed}
 }
 \value{
 A vector of the tiebreaking results corresponding to each team in the function input.

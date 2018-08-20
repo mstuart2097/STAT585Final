@@ -4,8 +4,8 @@
 \alias{HeadtoHead}
 \title{Head-to-Head}
 \usage{
-HeadtoHead(Team1, Team2, Team3 = NULL, Team4 = NULL,
-  data = WeeklyUpdate())
+HeadtoHead(Team1, Team2, Team3 = NULL, Team4 = NULL, data,
+  SimScores = NULL)
 }
 \arguments{
 \item{Team1}{the main team whose game results is being evaluated by the function}
@@ -15,6 +15,8 @@ HeadtoHead(Team1, Team2, Team3 = NULL, Team4 = NULL,
 \item{Team3}{a team that \code{Team1} is being evaluated against (default is \code{NULL})}
 
 \item{Team4}{a team that \code{Team1} is being evaluated against (default is \code{NULL})}
+
+\item{SimScores}{the simulated scores, if a simulation was performed}
 
 \item{Data}{the data frame from which Scores are gathered (default is Week 17 \code{WeeklyUpdate})}
 }

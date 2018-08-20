@@ -2,14 +2,10 @@
 % Please edit documentation in R/ProjectNFL.R
 \name{CommonGames}
 \alias{CommonGames}
-\alias{CommonGamesPts}
 \title{CommonGames}
 \usage{
-CommonGames(Team1, Team2, Team3 = NULL, Team4 = NULL,
-  data = WeeklyUpdate())
-
-CommonGamesPts(Team1, Team2, Team3 = NULL, Team4 = NULL,
-  data = WeeklyUpdate())
+CommonGames(Team1, Team2, Team3 = NULL, Team4 = NULL, data,
+  SimScores = NULL)
 }
 \arguments{
 \item{Team1}{the main team whose statistic is being evaluated by the function}
@@ -19,6 +15,8 @@ CommonGamesPts(Team1, Team2, Team3 = NULL, Team4 = NULL,
 \item{Team3}{a team that \code{Team1} is being evaluated against (default is \code{NULL})}
 
 \item{Team4}{a team that \code{Team1} is being evaluated against (default is \code{NULL})}
+
+\item{SimScores}{the simulated scores, if a simulation was performed}
 
 \item{Data}{the data frame from which Scores are gathered (default is Week 17 \code{WeeklyUpdate})}
 }

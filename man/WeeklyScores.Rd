@@ -15,11 +15,12 @@
 \url{"http://www.nfl.com/schedules"}
 }
 \usage{
-WeeklyScores(Year=2017,Week = 1)
+WeeklyScores(Year = 2017, Week = 1)
 }
 \arguments{
-\item{Week}{the identifier for the week of scores you want (Default is 1)}
 \item{Year}{the identifier for the year of scores you want (Default is 2017)}
+
+\item{Week}{the identifier for the week of scores you want (Default is 1)}
 }
 \value{
 A dataset of Scores of games according to the format description

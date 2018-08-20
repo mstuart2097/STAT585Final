@@ -8,16 +8,18 @@
 \alias{FinalRank}
 \title{Conference Tiebreakers}
 \usage{
-TwoTieConf(Team1, Team2, scores = WeeklyUpdate())
+TwoTieConf(Team1, Team2, scores, SimScores = NULL)
 
-ThreeTieConf(Team1, Team2, Team3, scores = WeeklyUpdate())
+ThreeTieConf(Team1, Team2, Team3, scores, SimScores = NULL)
 
-FourTieConf(Team1, Team2, Team3, Team4, scores = WeeklyUpdate())
+FourTieConf(Team1, Team2, Team3, Team4, scores, SimScores)
 
-FinalRank(scores = WeeklyUpdate())
+FinalRank(scores, SimScores = NULL)
 }
 \arguments{
 \item{scores}{the data frame of scores used for calculating \code{Head-to-Head} and \code{CommonGames}}
+
+\item{SimScores}{the simulated scores, if a simulation was performed}
 }
 \value{
 A vector of the tiebreaking results corresponding to each team in the function input.

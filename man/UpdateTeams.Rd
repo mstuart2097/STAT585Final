@@ -4,18 +4,18 @@
 \alias{UpdateTeams}
 \title{UpdateTeams}
 \usage{
-UpdateTeams(data = WeeklyUpdate())
+UpdateTeams(data, SimScores = NULL)
 }
 \arguments{
-\item{data}{the WeeklyUpdate output that will be used to aggregate the data}
+\item{SimScores}{A vector of the Games that were simulated}
+
+\item{RealScores}{A vector of the Actual Game Scores}
+
+\item{Games}{A dataframe of the Games for the current season}
 }
 \value{
 A dataset of the same dimensions and format as NFLTeams
 }
 \description{
 This is a function that will Update all tiebreaking stats from the WeeklyUpdate output and using NFLTeams as a template
-}
-\examples{
-UpdateTeams()
-UpdateTeams(WeeklyUpdate(16))
 }

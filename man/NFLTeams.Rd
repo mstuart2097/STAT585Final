@@ -4,7 +4,7 @@
 \name{NFLTeams}
 \alias{NFLTeams}
 \title{NFLTeams}
-\format{A dataset containing 32 rows and 20 variables
+\format{A dataset containing 32 rows and 14 variables
 \describe{
  \item{Team}{Identifier for the team in the NFL}
  \item{Conference}{Identifier for the team's conference}
@@ -20,12 +20,6 @@
  \item{DivTies}{Total Games Tied against teams in their own division}
  \item{SOV}{Combined Win-Loss Record in games in which Team won}
  \item{SOS}{Combined Win-Loss Record in games played by Team}
- \item{ConfPtScored}{Total Points Scored in games played in their own conference}
- \item{ConfPtAllowed}{Total Points Allowed in games played in their own conference}
- \item{AllPtScored}{Total Points Scored in all games played by Team}
- \item{AllPtAllowed}{Total Points Allowed in all games played by Team}
- \item{ConfPtRank}{Sum of Rank within conference in terms of Points Scored and Points Allowed in games played within the conference}
- \item{AllPtRank}{Sum of Rank  in terms of Points Scored and Points Allowed in all games played}
 }}
 \source{
 \url{"http://www.dummies.com/sports/football/the-national-football-league-conferences/"}

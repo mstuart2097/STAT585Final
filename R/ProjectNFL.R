@@ -1,7 +1,7 @@
 #'@title NFLTeams
 #'@description Tiebreaking Data for the 32 teams in the National Football League
 #' The dataset containing necessary information for tiebreaking procedures.  The statistics can be updated using the UpdateData function
-#' @format A dataset containing 32 rows and 20 variables
+#' @format A dataset containing 32 rows and 14 variables
 #' \describe{
 #'  \item{Team}{Identifier for the team in the NFL}
 #'  \item{Conference}{Identifier for the team's conference}
@@ -17,12 +17,6 @@
 #'  \item{DivTies}{Total Games Tied against teams in their own division}
 #'  \item{SOV}{Combined Win-Loss Record in games in which Team won}
 #'  \item{SOS}{Combined Win-Loss Record in games played by Team}
-#'  \item{ConfPtScored}{Total Points Scored in games played in their own conference}
-#'  \item{ConfPtAllowed}{Total Points Allowed in games played in their own conference}
-#'  \item{AllPtScored}{Total Points Scored in all games played by Team}
-#'  \item{AllPtAllowed}{Total Points Allowed in all games played by Team}
-#'  \item{ConfPtRank}{Sum of Rank within conference in terms of Points Scored and Points Allowed in games played within the conference}
-#'  \item{AllPtRank}{Sum of Rank  in terms of Points Scored and Points Allowed in all games played}
 #' }
 #' @source \url{"http://www.dummies.com/sports/football/the-national-football-league-conferences/"}
 #' @source \url{"http://www.nfl.com/schedules/2016"}
@@ -150,14 +144,16 @@ WeeklyUpdate <- function(Year=2017,WeekID=17){
 
 #'@title UpdateTeams
 #'@description This is a function that will Update all tiebreaking stats from the WeeklyUpdate output and using NFLTeams as a template
-#'@param data the WeeklyUpdate output that will be used to aggregate the data
+#'@param RealScores A vector of the Actual Game Scores
+#'@param SimScores A vector of the Games that were simulated
+#'@param Games A dataframe of the Games for the current season
 #'@export
 #'@return A dataset of the same dimensions and format as NFLTeams
-#' @examples
-#' UpdateTeams()
-#' UpdateTeams(WeeklyUpdate(16))
-UpdateTeams <- function(data = WeeklyUpdate()){
-  data <- data[is.na(data$AwayScore)==FALSE,]
+UpdateTeams <- function(data,SimScores=NULL){
+  if (!is.null(SimScores)) {
+    scores <- c(data$ScoreDiff[!is.na(data$ScoreDiff)],SimScores[is.na(data$ScoreDiff)])
+    data$ScoreDiff <- scores
+  }
   for (i in 1:80){
     HomeID <- grep(data$HomeTeam[i],data$HomeTeam)
     AwayID <- grep(data$HomeTeam[i],data$AwayTeam)
@@ -165,44 +161,32 @@ UpdateTeams <- function(data = WeeklyUpdate()){
     HomeVector <- sapply(data$AwayTeam[HomeID],function(x){grep(x,NFLTeams$Team)})
     AwayVector <- sapply(data$HomeTeam[AwayID],function(x){grep(x,NFLTeams$Team)})
     NFLTeams$Wins[StatID] <-
-      length(which(data$HomeScore[HomeID] - data$AwayScore[HomeID]>0))+
-      length(which(data$HomeScore[AwayID] - data$AwayScore[AwayID]<0))
+      length(which(data$ScoreDiff[HomeID]>0))+
+      length(which(data$ScoreDiff[AwayID]<0))
     NFLTeams$Losses[StatID] <-
-      length(which(data$HomeScore[HomeID] - data$AwayScore[HomeID]<0))+
-      length(which(data$HomeScore[AwayID] - data$AwayScore[AwayID]>0))
+      length(which(data$ScoreDiff[HomeID]<0))+
+      length(which(data$ScoreDiff[AwayID]>0))
     NFLTeams$Ties[StatID] <-
-      length(which(data$HomeScore[HomeID] - data$AwayScore[HomeID]==0))+
-      length(which(data$HomeScore[AwayID] - data$AwayScore[AwayID]==0))
+      length(which(data$ScoreDiff[HomeID]==0))+
+      length(which(data$ScoreDiff[AwayID]==0))
     NFLTeams$ConfWins[StatID] <-
-      length(which(data$HomeScore[HomeID] - data$AwayScore[HomeID]>0 & NFLTeams$Conference[HomeVector]==NFLTeams$Conference[StatID]))+
-      length(which(data$HomeScore[AwayID] - data$AwayScore[AwayID]<0 & NFLTeams$Conference[AwayVector]==NFLTeams$Conference[StatID]))
+      length(which(data$ScoreDiff[HomeID]>0 & NFLTeams$Conference[HomeVector]==NFLTeams$Conference[StatID]))+
+      length(which(data$ScoreDiff[AwayID]<0 & NFLTeams$Conference[AwayVector]==NFLTeams$Conference[StatID]))
     NFLTeams$ConfLosses[StatID] <-
-      length(which(data$HomeScore[HomeID] - data$AwayScore[HomeID]<0 & NFLTeams$Conference[HomeVector]==NFLTeams$Conference[StatID]))+
-      length(which(data$HomeScore[AwayID] - data$AwayScore[AwayID]>0 & NFLTeams$Conference[AwayVector]==NFLTeams$Conference[StatID]))
+      length(which(data$ScoreDiff[HomeID]<0 & NFLTeams$Conference[HomeVector]==NFLTeams$Conference[StatID]))+
+      length(which(data$ScoreDiff[AwayID]>0 & NFLTeams$Conference[AwayVector]==NFLTeams$Conference[StatID]))
     NFLTeams$ConfTies[StatID] <-
-      length(which(data$HomeScore[HomeID] - data$AwayScore[HomeID]==0 & NFLTeams$Conference[HomeVector]==NFLTeams$Conference[StatID]))+
-      length(which(data$HomeScore[AwayID] - data$AwayScore[AwayID]==0 & NFLTeams$Conference[AwayVector]==NFLTeams$Conference[StatID]))
+      length(which(data$ScoreDiff[HomeID]==0 & NFLTeams$Conference[HomeVector]==NFLTeams$Conference[StatID]))+
+      length(which(data$ScoreDiff[AwayID]==0 & NFLTeams$Conference[AwayVector]==NFLTeams$Conference[StatID]))
     NFLTeams$DivWins[StatID] <-
-      length(which(data$HomeScore[HomeID] - data$AwayScore[HomeID]>0 & NFLTeams$Division[HomeVector]==NFLTeams$Division[StatID]))+
-      length(which(data$HomeScore[AwayID] - data$AwayScore[AwayID]<0 & NFLTeams$Division[AwayVector]==NFLTeams$Division[StatID]))
+      length(which(data$ScoreDiff[HomeID]>0 & NFLTeams$Division[HomeVector]==NFLTeams$Division[StatID]))+
+      length(which(data$ScoreDiff[AwayID]<0 & NFLTeams$Division[AwayVector]==NFLTeams$Division[StatID]))
     NFLTeams$DivLosses[StatID] <-
-      length(which(data$HomeScore[HomeID] - data$AwayScore[HomeID]<0 & NFLTeams$Division[HomeVector]==NFLTeams$Division[StatID]))+
-      length(which(data$HomeScore[AwayID] - data$AwayScore[AwayID]>0 & NFLTeams$Division[AwayVector]==NFLTeams$Division[StatID]))
+      length(which(data$ScoreDiff[HomeID]<0 & NFLTeams$Division[HomeVector]==NFLTeams$Division[StatID]))+
+      length(which(data$ScoreDiff[AwayID]>0 & NFLTeams$Division[AwayVector]==NFLTeams$Division[StatID]))
     NFLTeams$DivTies[StatID] <-
-      length(which(data$HomeScore[HomeID] - data$AwayScore[HomeID]==0 & NFLTeams$Division[HomeVector]==NFLTeams$Division[StatID]))+
-      length(which(data$HomeScore[AwayID] - data$AwayScore[AwayID]==0 & NFLTeams$Division[AwayVector]==NFLTeams$Division[StatID]))
-    NFLTeams$ConfPtScored[StatID]  <-
-      sum((data$HomeScore[HomeID])[NFLTeams$Conference[HomeVector]==NFLTeams$Conference[StatID]]) +
-      sum((data$AwayScore[AwayID])[NFLTeams$Conference[AwayVector]==NFLTeams$Conference[StatID]])
-    NFLTeams$ConfPtAllowed[StatID]  <-
-      sum((data$AwayScore[HomeID])[NFLTeams$Conference[HomeVector]==NFLTeams$Conference[StatID]]) +
-      sum((data$HomeScore[AwayID])[NFLTeams$Conference[AwayVector]==NFLTeams$Conference[StatID]])
-    NFLTeams$AllPtScored[StatID]  <-
-      sum((data$HomeScore[HomeID])) +
-      sum((data$AwayScore[AwayID]))
-    NFLTeams$AllPtAllowed[StatID]  <-
-      sum((data$AwayScore[HomeID])) +
-      sum((data$HomeScore[AwayID]))
+      length(which(data$ScoreDiff[HomeID]==0 & NFLTeams$Division[HomeVector]==NFLTeams$Division[StatID]))+
+      length(which(data$ScoreDiff[AwayID]==0 & NFLTeams$Division[AwayVector]==NFLTeams$Division[StatID]))
   }
   for (i in 1:80){
     HomeID <- grep(data$HomeTeam[i],data$HomeTeam)
@@ -211,14 +195,14 @@ UpdateTeams <- function(data = WeeklyUpdate()){
     HomeVector <- sapply(data$AwayTeam[HomeID],function(x){grep(x,NFLTeams$Team)})
     AwayVector <- sapply(data$HomeTeam[AwayID],function(x){grep(x,NFLTeams$Team)})
   W <-
-    sum(NFLTeams$Wins[HomeVector][data$HomeScore[HomeID] - data$AwayScore[HomeID]>0]) +
-    sum(NFLTeams$Wins[AwayVector][data$HomeScore[AwayID] - data$AwayScore[AwayID]<0])
+    sum(NFLTeams$Wins[HomeVector][data$ScoreDiff[HomeID]>0]) +
+    sum(NFLTeams$Wins[AwayVector][data$ScoreDiff[AwayID]<0])
   L <-
-    sum(NFLTeams$Losses[HomeVector][data$HomeScore[HomeID] - data$AwayScore[HomeID]>0]) +
-    sum(NFLTeams$Losses[AwayVector][data$HomeScore[AwayID] - data$AwayScore[AwayID]<0])
+    sum(NFLTeams$Losses[HomeVector][data$ScoreDiff[HomeID]>0]) +
+    sum(NFLTeams$Losses[AwayVector][data$ScoreDiff[AwayID]<0])
   T <-
-    sum(NFLTeams$Ties[HomeVector][data$HomeScore[HomeID] - data$AwayScore[HomeID]>0]) +
-    sum(NFLTeams$Ties[AwayVector][data$HomeScore[AwayID] - data$AwayScore[AwayID]<0])
+    sum(NFLTeams$Ties[HomeVector][data$ScoreDiff[HomeID]>0]) +
+    sum(NFLTeams$Ties[AwayVector][data$ScoreDiff[AwayID]<0])
   NFLTeams$SOV[StatID] <- (W+0.5*T)/(W+L+T)
   W <-
     sum(NFLTeams$Wins[AwayVector]) +
@@ -231,10 +215,6 @@ UpdateTeams <- function(data = WeeklyUpdate()){
     sum(NFLTeams$Ties[HomeVector])
   NFLTeams$SOS[StatID] <- (W+0.5*T)/(W+L+T)
   }
-  NFLTeams$ConfPtRank <-
-    c(rank(NFLTeams$ConfPtScored[NFLTeams$Conference=="AFC"]),rank(NFLTeams$ConfPtScored[NFLTeams$Conference=="NFC"])) +
-    c(rank(-NFLTeams$ConfPtAllowed[NFLTeams$Conference=="AFC"]),rank(-NFLTeams$ConfPtAllowed[NFLTeams$Conference=="NFC"]))
-  NFLTeams$AllPtRank <- rank(NFLTeams$AllPtScored)+rank(-NFLTeams$AllPtAllowed)
   NFLTeams
 }
 
@@ -248,6 +228,7 @@ UpdateTeams <- function(data = WeeklyUpdate()){
 #'@param Team3 a team that \code{Team1} is being evaluated against (default is \code{NULL})
 #'@param Team4 a team that \code{Team1} is being evaluated against (default is \code{NULL})
 #'@param Data the data frame from which Scores are gathered (default is Week 17 \code{WeeklyUpdate})
+#'@param SimScores the simulated scores, if a simulation was performed
 #'@return \code{CommonGames} a win-loss record in games the other teams played as well.
 #'\code{CommonGamesPts} the total net points in games the other teams played as well.
 #' @examples
@@ -258,7 +239,11 @@ UpdateTeams <- function(data = WeeklyUpdate()){
 #' CommonGamesPts("Patriots","Dolphins","Bills")
 #' CommonGamesPts("Patriots","Dolphins","Bills","Jets")
 #' @export
-CommonGames <- function(Team1,Team2,Team3=NULL,Team4=NULL,data=WeeklyUpdate()){
+CommonGames <- function(Team1,Team2,Team3=NULL,Team4=NULL,data,SimScores=NULL){
+  if (!is.null(SimScores)) {
+    scores <- c(data$ScoreDiff[!is.na(data$ScoreDiff)],SimScores[is.na(data$ScoreDiff)])
+    data$ScoreDiff <- scores
+  }
   for(i in 1:80){
     if (data$HomeTeam[i]==Team1) {break}
   }
@@ -295,55 +280,13 @@ CommonGames <- function(Team1,Team2,Team3=NULL,Team4=NULL,data=WeeklyUpdate()){
   } else if (is.null(Team3)==FALSE) {
     IDs <- IDs1 == TRUE & IDs2 == TRUE
   } else {IDs <- IDs1 == TRUE}
-  CG <- (length(which(c(data$AwayScore[grep(data$HomeTeam[i],data$AwayTeam)] - data$HomeScore[grep(data$HomeTeam[i],data$AwayTeam)],
-                        data$HomeScore[grep(data$HomeTeam[i],data$HomeTeam)] - data$AwayScore[grep(data$HomeTeam[i],data$HomeTeam)])>0 &
+  CG <- (length(which(c(-data$ScoreDiff[grep(data$HomeTeam[i],data$AwayTeam)],
+                        data$ScoreDiff[grep(data$HomeTeam[i],data$HomeTeam)])>0 &
                         IDs == TRUE)) +
-           0.5*(length(which(c(data$AwayScore[grep(data$HomeTeam[i],data$AwayTeam)] - data$HomeScore[grep(data$HomeTeam[i],data$AwayTeam)],
-                               data$HomeScore[grep(data$HomeTeam[i],data$HomeTeam)] - data$AwayScore[grep(data$HomeTeam[i],data$HomeTeam)])==0 &
+           0.5*(length(which(c(-data$ScoreDiff[grep(data$HomeTeam[i],data$AwayTeam)],
+                               data$ScoreDiff[grep(data$HomeTeam[i],data$HomeTeam)])==0 &
                                IDs == TRUE))))/length(which(IDs == TRUE))
   ifelse(length(which(IDs == TRUE))<=4,0,CG)
-}
-#' @rdname CommonGames
-CommonGamesPts <- function(Team1,Team2,Team3=NULL,Team4=NULL,data=WeeklyUpdate()){
-for(i in 1:80){
-  if (data$HomeTeam[i]==Team1) {break}
-}
-for(j in 1:80){
-  if (data$HomeTeam[j]==Team2) {break}
-}
-if (is.null(Team3)==FALSE){
-  for(k in 1:80){
-    if (data$HomeTeam[k]==Team3) {break}
-  }
-}
-if (is.null(Team4)==FALSE){
-  for(l in 1:80){
-    if (data$HomeTeam[l]==Team4) {break}
-  }
-}
-Games1 <- c(NFLTeams$Team[sapply(data$HomeTeam[grep(data$HomeTeam[i],data$AwayTeam)],function(x){grep(x,NFLTeams$Team)})],
-            NFLTeams$Team[sapply(data$AwayTeam[grep(data$HomeTeam[i],data$HomeTeam)],function(x){grep(x,NFLTeams$Team)})])
-Games2 <- c(NFLTeams$Team[sapply(data$HomeTeam[grep(data$HomeTeam[j],data$AwayTeam)],function(x){grep(x,NFLTeams$Team)})],
-            NFLTeams$Team[sapply(data$AwayTeam[grep(data$HomeTeam[j],data$HomeTeam)],function(x){grep(x,NFLTeams$Team)})])
-if (is.null(Team3)==FALSE){
-  Games3 <- c(NFLTeams$Team[sapply(data$HomeTeam[grep(data$HomeTeam[k],data$AwayTeam)],function(x){grep(x,NFLTeams$Team)})],
-              NFLTeams$Team[sapply(data$AwayTeam[grep(data$HomeTeam[k],data$HomeTeam)],function(x){grep(x,NFLTeams$Team)})])
-}
-if (is.null(Team4)==FALSE){
-  Games4 <- c(NFLTeams$Team[sapply(data$HomeTeam[grep(data$HomeTeam[l],data$AwayTeam)],function(x){grep(x,NFLTeams$Team)})],
-              NFLTeams$Team[sapply(data$AwayTeam[grep(data$HomeTeam[l],data$HomeTeam)],function(x){grep(x,NFLTeams$Team)})])
-}
-IDs1 <- Games1 %in% Games2
-if(is.null(Team3)==FALSE) {IDs2 <- Games1 %in% Games3}
-if(is.null(Team4)==FALSE) {IDs3 <- Games1 %in% Games4}
-if(is.null(Team4)==FALSE) {
-  IDs <- IDs1 == TRUE & IDs2 == TRUE & IDs3 == TRUE
-} else if (is.null(Team3)==FALSE) {
-  IDs <- IDs1 == TRUE & IDs2 == TRUE
-} else {IDs <- IDs1 == TRUE}
-CG <- sum(c(data$AwayScore[grep(data$HomeTeam[i],data$AwayTeam)] - data$HomeScore[grep(data$HomeTeam[i],data$AwayTeam)],
-            data$HomeScore[grep(data$HomeTeam[i],data$HomeTeam)] - data$AwayScore[grep(data$HomeTeam[i],data$HomeTeam)])[IDs == TRUE])
-ifelse(length(which(IDs == TRUE))<=4,0,CG)
 }
 
 #'@title Head-to-Head
@@ -353,44 +296,45 @@ ifelse(length(which(IDs == TRUE))<=4,0,CG)
 #'@param Team3 a team that \code{Team1} is being evaluated against (default is \code{NULL})
 #'@param Team4 a team that \code{Team1} is being evaluated against (default is \code{NULL})
 #'@param Data the data frame from which Scores are gathered (default is Week 17 \code{WeeklyUpdate})
+#'@param SimScores the simulated scores, if a simulation was performed
 #'@return \code{Wins} - \code{Losses} in all games for \code{Team1} against the other teams specified
 #' @examples
 #' HeadtoHead("Vikings","Packers")
 #' HeadtoHead("Vikings","Packers","Bears")
 #' HeadtoHead("Vikings","Packers","Bears","Lions")
 #' @export
-HeadtoHead <- function(Team1,Team2,Team3=NULL,Team4=NULL,data=WeeklyUpdate()){
+HeadtoHead <- function(Team1,Team2,Team3=NULL,Team4=NULL,data,SimScores=NULL){
 for(i in 1:80){
   if (data$HomeTeam[i]==Team1) {break}
 }
 Games1 <- c(NFLTeams$Team[sapply(data$HomeTeam[grep(data$HomeTeam[i],data$AwayTeam)],function(x){grep(x,NFLTeams$Team)})],
             NFLTeams$Team[sapply(data$AwayTeam[grep(data$HomeTeam[i],data$HomeTeam)],function(x){grep(x,NFLTeams$Team)})])
-HH <- (length(which(c(data$AwayScore[grep(data$HomeTeam[i],data$AwayTeam)] - data$HomeScore[grep(data$HomeTeam[i],data$AwayTeam)],
-                      data$HomeScore[grep(data$HomeTeam[i],data$HomeTeam)] - data$AwayScore[grep(data$HomeTeam[i],data$HomeTeam)])>0 &
+HH <- (length(which(c(-data$ScoreDiff[grep(data$HomeTeam[i],data$AwayTeam)],
+                       data$ScoreDiff[grep(data$HomeTeam[i],data$HomeTeam)])>0 &
                       Games1 == Team2)) -
-         (length(which(c(data$AwayScore[grep(data$HomeTeam[i],data$AwayTeam)] - data$HomeScore[grep(data$HomeTeam[i],data$AwayTeam)],
-                         data$HomeScore[grep(data$HomeTeam[i],data$HomeTeam)] - data$AwayScore[grep(data$HomeTeam[i],data$HomeTeam)])<0 &
+         (length(which(c(-data$ScoreDiff[grep(data$HomeTeam[i],data$AwayTeam)],
+                          data$ScoreDiff[grep(data$HomeTeam[i],data$HomeTeam)])<0 &
                          Games1 == Team2))))
 if(is.null(Team3)==TRUE){
     HH <- HH
 } else {HH <- HH +
-    (length(which(c(data$AwayScore[grep(data$HomeTeam[i],data$AwayTeam)] - data$HomeScore[grep(data$HomeTeam[i],data$AwayTeam)],
-                    data$HomeScore[grep(data$HomeTeam[i],data$HomeTeam)] - data$AwayScore[grep(data$HomeTeam[i],data$HomeTeam)])>0 &
-                    Games1 == Team3)) -
-       (length(which(c(data$AwayScore[grep(data$HomeTeam[i],data$AwayTeam)] - data$HomeScore[grep(data$HomeTeam[i],data$AwayTeam)],
-                       data$HomeScore[grep(data$HomeTeam[i],data$HomeTeam)] - data$AwayScore[grep(data$HomeTeam[i],data$HomeTeam)])<0 &
-                       Games1 == Team3))))
+  (length(which(c(-data$ScoreDiff[grep(data$HomeTeam[i],data$AwayTeam)],
+                  data$ScoreDiff[grep(data$HomeTeam[i],data$HomeTeam)])>0 &
+                  Games1 == Team3)) -
+     (length(which(c(-data$ScoreDiff[grep(data$HomeTeam[i],data$AwayTeam)],
+                     data$ScoreDiff[grep(data$HomeTeam[i],data$HomeTeam)])<0 &
+                     Games1 == Team3))))
 }
 
 if(is.null(Team4)==TRUE){
     HH <- HH
 } else {HH <- HH +
-    (length(which(c(data$AwayScore[grep(data$HomeTeam[i],data$AwayTeam)] - data$HomeScore[grep(data$HomeTeam[i],data$AwayTeam)],
-                    data$HomeScore[grep(data$HomeTeam[i],data$HomeTeam)] - data$AwayScore[grep(data$HomeTeam[i],data$HomeTeam)])>0 &
-                    Games1 == Team4)) -
-       (length(which(c(data$AwayScore[grep(data$HomeTeam[i],data$AwayTeam)] - data$HomeScore[grep(data$HomeTeam[i],data$AwayTeam)],
-                       data$HomeScore[grep(data$HomeTeam[i],data$HomeTeam)] - data$AwayScore[grep(data$HomeTeam[i],data$HomeTeam)])<0 &
-                       Games1 == Team4))))
+  (length(which(c(-data$ScoreDiff[grep(data$HomeTeam[i],data$AwayTeam)],
+                  data$ScoreDiff[grep(data$HomeTeam[i],data$HomeTeam)])>0 &
+                  Games1 == Team4)) -
+     (length(which(c(-data$ScoreDiff[grep(data$HomeTeam[i],data$AwayTeam)],
+                     data$ScoreDiff[grep(data$HomeTeam[i],data$HomeTeam)])<0 &
+                     Games1 == Team4))))
   }
 HH
 }
@@ -403,6 +347,7 @@ HH
 #'@param Team3
 #'@param Team4
 #'@param scores the data frame of scores used for calculating \code{Head-to-Head}, \code{CommonGames}, and \code{CommonGamesPts}
+#'@param SimScores the simulated scores, if a simulation was performed
 #'@details The order of statistics for
 #' which ties are broken are as follows: Head-to-Head Record, win-loss record against teams within the division, win-loss record against teams common
 #' opponents (\code{CommonGames}), win-loss record against teams within the conference, strength of victory (win-loss record against all teams defeated)
@@ -415,8 +360,8 @@ HH
 #' FourTieDiv("Vikings","Packers","Bears","Lions")
 #' FinalDivRank()
 #' @export
-TwoTieDiv <- function(Team1,Team2,scores=WeeklyUpdate()){
-  data = UpdateTeams(scores)
+TwoTieDiv <- function(Team1,Team2,scores,SimScores=NULL){
+  data = UpdateTeams(data=scores,SimScores)
   tmp <- rbind(data[data$Team==Team1,],data[data$Team==Team2,])
   tmp2 <- c(HeadtoHead(Team1,Team2,data=scores),HeadtoHead(Team2,Team1,data=scores))
   dt <- rank(-tmp2,ties.method="min")
@@ -437,8 +382,8 @@ TwoTieDiv <- function(Team1,Team2,scores=WeeklyUpdate()){
   du
 }
 #' @rdname Division
-ThreeTieDiv <- function(Team1,Team2,Team3,scores=WeeklyUpdate()){
-  data = UpdateTeams(scores)
+ThreeTieDiv <- function(Team1,Team2,Team3,scores,SimScores=NULL){
+  data = UpdateTeams(data=scores,SimScores)
   tmp <- rbind(data[data$Team==Team1,],data[data$Team==Team2,],data[data$Team==Team3,])
   tmp2 <- c(HeadtoHead(Team1,Team2,Team3,data=scores),HeadtoHead(Team2,Team1,Team3,data=scores),HeadtoHead(Team3,Team1,Team2,data=scores))
   dt <- rank(-tmp2,ties.method="min")
@@ -464,8 +409,8 @@ ThreeTieDiv <- function(Team1,Team2,Team3,scores=WeeklyUpdate()){
   du
 }
 #' @rdname Division
-FourTieDiv <- function(Team1,Team2,Team3,Team4,scores=WeeklyUpdate()){
-  data = UpdateTeams(scores)
+FourTieDiv <- function(Team1,Team2,Team3,Team4,scores,SimScores=NULL){
+  data = UpdateTeams(data=scores,SimScores)
   tmp <- rbind(data[data$Team==Team1,],data[data$Team==Team2,],data[data$Team==Team3,],data[data$Team==Team4,])
   tmp2 <- (tmp$DivWins+0.5*tmp$DivTies)/(tmp$DivWins+tmp$DivLosses+tmp$DivTies)
   dt <- rank(-tmp2,ties.method="min")
@@ -491,9 +436,8 @@ FourTieDiv <- function(Team1,Team2,Team3,Team4,scores=WeeklyUpdate()){
   du
 }
 #' @rdname Division
-FinalDivRank <- function(scores=WeeklyUpdate()) {
-  require(tidyverse)
-  data <- UpdateTeams(scores)
+FinalDivRank <- function(scores,SimScores=NULL) {
+  data <- UpdateTeams(data=scores,SimScores)
   tmp <- data %>%
     nest(-Division) %>%
     mutate(Rank=lapply(data,function(x){rank(-(x$Wins+0.5*x$Ties)/(x$Wins+x$Losses+x$Ties),ties.method="min")})) %>%
@@ -514,6 +458,7 @@ FinalDivRank <- function(scores=WeeklyUpdate()) {
 #'@param Team3
 #'@param Team4
 #'@param scores the data frame of scores used for calculating \code{Head-to-Head} and \code{CommonGames}
+#'@param SimScores the simulated scores, if a simulation was performed
 #'@details The order of statistics for
 #' which ties are broken are as follows: Apply division tiebreaker to eliminate all but the highest ranked team in each division,
 #' Head-to-Head Record, win-loss record against teams within the conference, win-loss record against teams common opponents (\code{CommonGames}),
@@ -529,8 +474,8 @@ FinalDivRank <- function(scores=WeeklyUpdate()) {
 #' ThreeTieDiv("Vikings","Giants","49ers")
 #' FourTieDiv("Vikings","Giants","49ers","Falcons")
 #' FinalDivRank()
-TwoTieConf <- function(Team1,Team2,scores=WeeklyUpdate()){
-  data = UpdateTeams(scores)
+TwoTieConf <- function(Team1,Team2,scores,SimScores=NULL){
+  data = UpdateTeams(data=scores,SimScores)
   if(data$Division[data$Team==Team1]==data$Division[data$Team==Team2]) {stop("Team1 and Team2 are in same division.  Please use TwoTieDiv()")}
   tmp <- rbind(data[data$Team==Team1,],data[data$Team==Team2,])
   Team1 <- (scores$HomeTeam[1:80][sapply(scores$HomeTeam[1:80],function(x){grepl(x,Team1)})==TRUE])[1]
@@ -553,8 +498,8 @@ TwoTieConf <- function(Team1,Team2,scores=WeeklyUpdate()){
   du
 }
 #' @rdname Conference
-ThreeTieConf <- function(Team1,Team2,Team3,scores=WeeklyUpdate()){
-  data = UpdateTeams(scores)
+ThreeTieConf <- function(Team1,Team2,Team3,scores,SimScores=NULL){
+  data = UpdateTeams(data=scores,SimScores)
   if(data$Division[data$Team==Team1]==data$Division[data$Team==Team2]) {stop("Team1 and Team2 are in same division.  Please use TwoTieDiv()")}
   if(data$Division[data$Team==Team1]==data$Division[data$Team==Team3]) {stop("Team1 and Team3 are in same division.  Please use TwoTieDiv()")}
   if(data$Division[data$Team==Team2]==data$Division[data$Team==Team3]) {stop("Team2 and Team3 are in same division.  Please use TwoTieDiv()")}
@@ -581,8 +526,8 @@ ThreeTieConf <- function(Team1,Team2,Team3,scores=WeeklyUpdate()){
   du
 }
 #' @rdname Conference
-FourTieConf <- function(Team1,Team2,Team3,Team4,scores=WeeklyUpdate()){
-  data = UpdateTeams(scores)
+FourTieConf <- function(Team1,Team2,Team3,Team4,scores,SimScores){
+  data = UpdateTeams(data=scores,SimScores)
   if(data$Division[data$Team==Team1]==data$Division[data$Team==Team2]) {stop("Team1 and Team2 are in same division.  Please use TwoTieDiv()")}
   if(data$Division[data$Team==Team1]==data$Division[data$Team==Team3]) {stop("Team1 and Team3 are in same division.  Please use TwoTieDiv()")}
   if(data$Division[data$Team==Team2]==data$Division[data$Team==Team3]) {stop("Team2 and Team3 are in same division.  Please use TwoTieDiv()")}
@@ -616,9 +561,8 @@ FourTieConf <- function(Team1,Team2,Team3,Team4,scores=WeeklyUpdate()){
   du
 }
 #' @rdname Conference
-FinalRank <- function(scores=WeeklyUpdate()){
-  require(tidyverse)
-  data=UpdateTeams(scores)
+FinalRank <- function(scores,SimScores=NULL){
+  data=UpdateTeams(data=scores,SimScores)
   tmp <- FinalDivRank(scores=scores)
   tmp$DivRank2 <- sapply(tmp$DivRank,function(x){min(x,2)})
   tmp2 <- tmp %>% nest(-Conference,-DivRank2)
@@ -642,106 +586,4 @@ FinalRank <- function(scores=WeeklyUpdate()){
   tmp2
 }
 
-#'@name Sim
-#'@title NFLSim
-#'@description This is a function that will take specified outcomes of games yet to be played, and simulate multiple seedings based on those
-#'specifications.
-#'@param Games The outcomes of any specified games yet to be played (default is \code{NULL}).  Any string of the format (AwayTeam AwayScore HomeTeam
-#'HomeScore) separated by any character not a letter or number will be sufficient
-#'@param sims Number of simulations requested to be run (default is 100)
-#'@param data The data frame of scores to be used for simulating scores for games yet to be played, that are not specified by the Games input
-#'@details
-#' All simulations will have the scores specified by the Games input.  Any other teams needing scores will be specified in the following way: the mean
-#' and standard deviation from all previous games will be taken for each team, and a score will be generated from a normal distribution with the specified
-#' mean and standard deviation.  Precautions are taken so that scores are a whole number, scores cannot be below zero, and scores cannot be one (a score of
-#' one is impossible in American Football)
-#'@return A data frame of each team's playoff seed based on the simulation results
-#' @examples
-#' NFLSim()
-#' NFLSim(sims=1000)
-#' NFLSim(Games="Cardinals13Rams17",sims=10)
-NFLSim <- function(Games=NULL,sims=100,data=WeeklyUpdate()){
-  require(rvest)
-  require(tidyverse)
-  rawscore <- data %>% gather(key="ID",value="Team",c(3,5)) %>% mutate(Score=ifelse(ID=="AwayTeam",AwayScore,HomeScore)) %>% select(Team,Score)
-  rawagainst <- data %>% gather(key="ID",value="Team",c(3,5)) %>% mutate(Score=ifelse(ID=="AwayTeam",HomeScore,AwayScore)) %>% select(Team,Score)
-  statsscore <- rawscore %>% group_by(Team) %>% summarise(mean=mean(Score,na.rm=TRUE),sd=sd(Score,na.rm=TRUE))
-  statsagainst <- rawagainst %>% group_by(Team) %>% summarise(mean=mean(Score,na.rm=TRUE),sd=sd(Score,na.rm=TRUE))
-  tmp <- data
-  x <- Games
-  if (is.null(x)==FALSE){
-    y <- gregexpr("s[^A-Za-z]*[0-9]+",x)
-    Spot <- as.vector(y[[1]])
-    Lens <- attr(y[[1]],"match.length")
-    z <- matrix(c(Spot,Lens),nrow=2,byrow=TRUE)
-    z[2,] <- apply(z,2,function(x){x[2]=x[1]+x[2]})
-    z[2,ncol(z)] <- nchar(x)
-    a <- as.vector(c(0,z))
-    b <- 0
-    for (i in 1:(length(a)-1)) {
-      b[i] <- substr(x,a[i]+1,a[i+1])
-    }
-    b[seq_along(b)[seq_along(b) %% 2 ==0]] <- gsub("[^0-9]","",b[seq_along(b) %% 2 == 0])
-    c <- data.frame(matrix(b,ncol=4,byrow=TRUE))
-    colnames(c) <- c("AwayTeam","AwayScore","HomeTeam","HomeScore")
-    for (j in 1:nrow(c)){
-      if (length(which(data$AwayTeam==c$AwayTeam[1] & data$HomeTeam==c$HomeTeam[1] & is.na(data$AwayScore))) == 0) {
-        stop(paste(c$AwayTeam[1]," at ",c$HomeTeam[1]," is not a game still remaining to be played.",sep=""))
-      }
-      tmp$AwayScore[tmp$AwayTeam==c$AwayTeam[j] & tmp$HomeTeam==c$HomeTeam[j] & is.na(tmp$AwayScore)] <- c$AwayScore[j]
-      tmp$HomeScore[tmp$AwayTeam==c$AwayTeam[j] & tmp$HomeTeam==c$HomeTeam[j] & is.na(tmp$HomeScore)] <- c$HomeScore[j]
-    }
-  }
-  for (s in 1:sims){
-    tmp$AwayScore <- as.numeric(apply(dat[,3:6],1,function(x){
-      ifelse(is.na(x[2]),
-        ifelse(max(round(rnorm(1,
-          mean=mean(c(statsscore$mean[statsscore$Team==x[1]],statsagainst$mean[statsagainst$Team==x[3]])),
-          sd=sqrt((statsscore$sd[statsscore$Team==x[1]]^2+(statsagainst$sd[statsagainst$Team==x[3]])^2)/4))),0)==1,
-          2,
-          max(round(rnorm(1,
-          mean=mean(c(statsscore$mean[statsscore$Team==x[1]],statsagainst$mean[statsagainst$Team==x[3]])),
-          sd=sqrt((statsscore$sd[statsscore$Team==x[1]]^2+(statsagainst$sd[statsagainst$Team==x[3]])^2)/4))),0)),x[2])}))
-    tmp$HomeScore <- as.numeric(apply(dat[,3:6],1,function(x){
-      ifelse(is.na(x[4]),
-        ifelse(max(round(rnorm(1,
-          mean=mean(c(statsscore$mean[statsscore$Team==x[3]],statsagainst$mean[statsagainst$Team==x[1]])),
-          sd=sqrt((statsscore$sd[statsscore$Team==x[3]]^2+(statsagainst$sd[statsagainst$Team==x[1]])^2)/4))),0)==1,
-          2,
-          max(round(rnorm(1,
-          mean=mean(c(statsscore$mean[statsscore$Team==x[3]],statsagainst$mean[statsagainst$Team==x[1]])),
-          sd=sqrt((statsscore$sd[statsscore$Team==x[3]]^2+(statsagainst$sd[statsagainst$Team==x[1]])^2)/4))),0)),x[4])}))
-    tm3 <- FinalRank(scores=tmp)
-    y <- tm3 %>% select(Team,ConfRank)
-    if (s==1) {x<-y} else {x<-full_join(x,y,by="Team")}
-    tmp <- data
-  }
-  n <- c(1:sims)
-  colnames(x) <- c("Team",sapply(n,function(x){paste("Sim",x,sep="")}))
-  x
-}
 
-#'@name SeedPlot
-#'@title SeedPlot
-#'@description This is a function that will take an output from the \code{NFLSim} function and create a plotly of the seeding outcomes from the simulation
-#'@param TeamX The specific team wanting to be analyzed in the graph
-#'@param Sim The simulation data set used from the \code{NFLSim} function
-#'@param Plotly An identifier to determine whether or not the user wants the graph to be a plotly
-#'@return A (plotly) bar graph showing the frequency of times a teams obtains a specific seed in the conference based on the simulation settings.
-#'If the graph is a plotly, the user can hover over a specific part of the graph to show the specific seed and the frequency that goes along with it.
-#' @examples
-#' SeedPlot()
-#' SeedPlot(TeamX="Raiders")
-#' SeedPlot(TeamX="Raiders",Sim=NFLSim(data=WeeklyUpdate(16)))                         
-SeedPlot <- function(TeamX="Bills",Sim=NFLSim(data=WeeklyUpdate()),Plotly=TRUE){
-  require(tidyverse)
-  require(plotly)
-  t <- Sim %>% filter(Team==TeamX) %>% select(-Team)
-  count <- sapply(c(1:16),function(x){length(which(t==x))})
-  num <- data.frame(count)
-  num$seed <- c(1:16)
-  gg <- ggplot(num,aes(x=seed,y=count))+geom_bar(stat="identity")+
-    xlab("Seed")+ylab("Frequency")+ggtitle(paste("Seeding Plot of",TeamX))+
-    theme(plot.title = element_text(hjust = 0.5))
-  if(Plotly==TRUE) {ggplotly(gg)} else {gg}
-}
