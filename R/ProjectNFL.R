@@ -363,7 +363,7 @@ HH
 TwoTieDiv <- function(Team1,Team2,scores,SimScores=NULL){
   data = UpdateTeams(data=scores,SimScores)
   tmp <- rbind(data[data$Team==Team1,],data[data$Team==Team2,])
-  tmp2 <- c(HeadtoHead(Team1,Team2,data=scores),HeadtoHead(Team2,Team1,data=scores))
+  tmp2 <- c(HeadtoHead(Team1,Team2,data=scores,SimScores),HeadtoHead(Team2,Team1,data=scores,SimScores))
   dt <- rank(-tmp2,ties.method="min")
   tmp2 <- (tmp$DivWins+0.5*tmp$DivTies)/(tmp$DivWins+tmp$DivLosses+tmp$DivTies)
   dt <- if (sum(dt)!=2) {dt} else {rank(-tmp2,ties.method="min")}
@@ -377,10 +377,12 @@ TwoTieDiv <- function(Team1,Team2,scores,SimScores=NULL){
   du
 }
 #' @rdname Division
+#' @export
 ThreeTieDiv <- function(Team1,Team2,Team3,scores,SimScores=NULL){
   data = UpdateTeams(data=scores,SimScores)
   tmp <- rbind(data[data$Team==Team1,],data[data$Team==Team2,],data[data$Team==Team3,])
-  tmp2 <- c(HeadtoHead(Team1,Team2,Team3,data=scores),HeadtoHead(Team2,Team1,Team3,data=scores),HeadtoHead(Team3,Team1,Team2,data=scores))
+  tmp2 <- c(HeadtoHead(Team1,Team2,Team3,data=scores,SimScores),HeadtoHead(Team2,Team1,Team3,data=scores,SimScores),
+            HeadtoHead(Team3,Team1,Team2,data=scores,SimScores))
   dt <- rank(-tmp2,ties.method="min")
   tmp2 <- (tmp$DivWins+0.5*tmp$DivTies)/(tmp$DivWins+tmp$DivLosses+tmp$DivTies)
   dt <- if (sum(dt)!=3) {dt} else {rank(-tmp2,ties.method="min")}
@@ -392,17 +394,18 @@ ThreeTieDiv <- function(Team1,Team2,Team3,scores,SimScores=NULL){
   dt <- if (sum(dt)!=3) {dt} else {rank(-tmp$SOV,ties.method="min")}
   dt <- if (sum(dt)!=3) {dt} else {rank(-tmp$SOS,ties.method="min")}
   du <- dt
-  du[du==2]<-TwoTieDiv((c(Team1,Team2,Team3)[x==2])[1],(c(Team1,Team2,Team3)[x==2])[2])+1
+  du[du==2]<-TwoTieDiv((c(Team1,Team2,Team3)[x==2])[1],(c(Team1,Team2,Team3)[x==2])[2],scores,SimScores)+1
   du
 }
 #' @rdname Division
+#' @export
 FourTieDiv <- function(Team1,Team2,Team3,Team4,scores,SimScores=NULL){
   data = UpdateTeams(data=scores,SimScores)
   tmp <- rbind(data[data$Team==Team1,],data[data$Team==Team2,],data[data$Team==Team3,],data[data$Team==Team4,])
   tmp2 <- (tmp$DivWins+0.5*tmp$DivTies)/(tmp$DivWins+tmp$DivLosses+tmp$DivTies)
   dt <- rank(-tmp2,ties.method="min")
-  tmp2 <- c(CommonGames(Team1,Team2,Team3,Team4,data=scores),CommonGames(Team2,Team1,Team3,Team4,data=scores),
-            CommonGames(Team3,Team1,Team2,Team4,data=scores),CommonGames(Team4,Team1,Team2,Team3,data=scores))
+  tmp2 <- c(CommonGames(Team1,Team2,Team3,Team4,data=scores,SimScores),CommonGames(Team2,Team1,Team3,Team4,data=scores,SimScores),
+            CommonGames(Team3,Team1,Team2,Team4,data=scores,SimScores),CommonGames(Team4,Team1,Team2,Team3,data=scores,SimScores))
   dt <- if (sum(dt)!=4) {dt} else {rank(-tmp2,ties.method="min")}
   tmp2 <- (tmp$ConfWins+0.5*tmp$ConfTies)/(tmp$ConfWins+tmp$ConfLosses+tmp$ConfTies)
   dt <- if (sum(dt)!=4) {dt} else {rank(-tmp2,ties.method="min")}
@@ -410,10 +413,11 @@ FourTieDiv <- function(Team1,Team2,Team3,Team4,scores,SimScores=NULL){
   dt <- if (sum(dt)!=4) {dt} else {rank(-tmp$SOS,ties.method="min")}
   du <- dt
   du[du==2]<-ThreeTieDiv((c(Team1,Team2,Team3)[x==2])[1],(c(Team1,Team2,Team3)[x==2])[2],
-                         (c(Team1,Team2,Team3)[x==2])[3])+1
+                         (c(Team1,Team2,Team3)[x==2])[3],scores,SimScores)+1
   du
 }
 #' @rdname Division
+#' @export
 FinalDivRank <- function(scores,SimScores=NULL) {
   data <- UpdateTeams(data=scores,SimScores)
   tmp <- data %>%
@@ -421,9 +425,9 @@ FinalDivRank <- function(scores,SimScores=NULL) {
     mutate(Rank=lapply(data,function(x){rank(-(x$Wins+0.5*x$Ties)/(x$Wins+x$Losses+x$Ties),ties.method="min")})) %>%
     unnest()
   tmp2 <- tmp %>% mutate(Rank2=Rank) %>% nest(-Division,-Rank2)
-  tmp2 <- tmp2 %>% mutate(DivRank=lapply(data,function(x){if(nrow(x)==4) {FourTieDiv(x$Team[1],x$Team[2],x$Team[3],x$Team[4],scores=scores)+x$Rank[1]-1} else
-    if(nrow(x)==3) {ThreeTieDiv(x$Team[1],x$Team[2],x$Team[3],scores=scores)+x$Rank[1]-1} else
-      if(nrow(x)==2) {TwoTieDiv(x$Team[1],x$Team[2],scores=scores)+x$Rank[1]-1} else
+  tmp2 <- tmp2 %>% mutate(DivRank=lapply(data,function(x){if(nrow(x)==4) {FourTieDiv(x$Team[1],x$Team[2],x$Team[3],x$Team[4],scores=scores,SimScores)+x$Rank[1]-1} else
+    if(nrow(x)==3) {ThreeTieDiv(x$Team[1],x$Team[2],x$Team[3],scores=scores,SimScores)+x$Rank[1]-1} else
+      if(nrow(x)==2) {TwoTieDiv(x$Team[1],x$Team[2],scores=scores,SimScores)+x$Rank[1]-1} else
         x$Rank}))
   tmp2 <- tmp2 %>% unnest() %>% select(-Rank2,-Rank)
   tmp2
@@ -452,6 +456,7 @@ FinalDivRank <- function(scores,SimScores=NULL) {
 #' ThreeTieDiv("Vikings","Giants","49ers")
 #' FourTieDiv("Vikings","Giants","49ers","Falcons")
 #' FinalDivRank()
+#' @export
 TwoTieConf <- function(Team1,Team2,scores,SimScores=NULL){
   data = UpdateTeams(data=scores,SimScores)
   if(data$Division[data$Team==Team1]==data$Division[data$Team==Team2]) {stop("Team1 and Team2 are in same division.  Please use TwoTieDiv()")}
@@ -460,11 +465,11 @@ TwoTieConf <- function(Team1,Team2,scores,SimScores=NULL){
   Team2 <- (scores$HomeTeam[1:80][sapply(scores$HomeTeam[1:80],function(x){grepl(x,Team2)})==TRUE])[1]
   tmp2 <- (tmp$Wins+0.5*tmp$Ties)/(tmp$Wins+tmp$Losses+tmp$Ties)
   dt <- rank(-tmp2,ties.method="min")
-  tmp2 <- c(HeadtoHead(Team1,Team2,data=scores),HeadtoHead(Team2,Team1,data=scores))
+  tmp2 <- c(HeadtoHead(Team1,Team2,data=scores,SimScores),HeadtoHead(Team2,Team1,data=scores,SimScores))
   dt <- if (sum(dt)!=2) {dt} else {rank(-tmp2,ties.method="min")}
   tmp2 <- (tmp$ConfWins+0.5*tmp$ConfTies)/(tmp$ConfWins+tmp$ConfLosses+tmp$ConfTies)
   dt <- if (sum(dt)!=2) {dt} else {rank(-tmp2,ties.method="min")}
-  tmp2 <- c(CommonGames(Team1,Team2,data=scores),CommonGames(Team2,Team1,data=scores))
+  tmp2 <- c(CommonGames(Team1,Team2,data=scores,SimScores),CommonGames(Team2,Team1,data=scores,SimScores))
   dt <- if (sum(dt)!=2) {dt} else {rank(-tmp2,ties.method="min")}
   dt <- if (sum(dt)!=2) {dt} else {rank(-tmp$SOV,ties.method="min")}
   dt <- if (sum(dt)!=2) {dt} else {rank(-tmp$SOS,ties.method="min")}
@@ -472,6 +477,7 @@ TwoTieConf <- function(Team1,Team2,scores,SimScores=NULL){
   du
 }
 #' @rdname Conference
+#' @export
 ThreeTieConf <- function(Team1,Team2,Team3,scores,SimScores=NULL){
   data = UpdateTeams(data=scores,SimScores)
   if(data$Division[data$Team==Team1]==data$Division[data$Team==Team2]) {stop("Team1 and Team2 are in same division.  Please use TwoTieDiv()")}
@@ -485,8 +491,8 @@ ThreeTieConf <- function(Team1,Team2,Team3,scores,SimScores=NULL){
   dt <- sapply(tmp2,function(x){ifelse(x==2,1,ifelse(x==-2,3,1))})
   tmp2 <- (tmp$ConfWins+0.5*tmp$ConfTies)/(tmp$ConfWins+tmp$ConfLosses+tmp$ConfTies)
   dt <- if (sum(dt)!=3) {dt} else {rank(-tmp2,ties.method="min")}
-  tmp2 <- c(CommonGames(Team1,Team2,Team3,data=scores),CommonGames(Team2,Team1,Team3,data=scores),
-            CommonGames(Team3,Team1,Team2,data=scores))
+  tmp2 <- c(CommonGames(Team1,Team2,Team3,data=scores,SimScores),CommonGames(Team2,Team1,Team3,data=scores,SimScores),
+            CommonGames(Team3,Team1,Team2,data=scores,SimScores))
   dt <- if (sum(dt)!=3) {dt} else {rank(-tmp2,ties.method="min")}
   dt <- if (sum(dt)!=3) {dt} else {rank(-tmp$SOV,ties.method="min")}
   dt <- if (sum(dt)!=3) {dt} else {rank(-tmp$SOS,ties.method="min")}
@@ -495,6 +501,7 @@ ThreeTieConf <- function(Team1,Team2,Team3,scores,SimScores=NULL){
   du
 }
 #' @rdname Conference
+#' @export
 FourTieConf <- function(Team1,Team2,Team3,Team4,scores,SimScores){
   data = UpdateTeams(data=scores,SimScores)
   if(data$Division[data$Team==Team1]==data$Division[data$Team==Team2]) {stop("Team1 and Team2 are in same division.  Please use TwoTieDiv()")}
@@ -508,13 +515,13 @@ FourTieConf <- function(Team1,Team2,Team3,Team4,scores,SimScores){
   Team2 <- (scores$HomeTeam[1:80][sapply(scores$HomeTeam[1:80],function(x){grepl(x,Team2)})==TRUE])[1]
   Team3 <- (scores$HomeTeam[1:80][sapply(scores$HomeTeam[1:80],function(x){grepl(x,Team3)})==TRUE])[1]
   Team4 <- (scores$HomeTeam[1:80][sapply(scores$HomeTeam[1:80],function(x){grepl(x,Team4)})==TRUE])[1]
-  tmp2 <- c(HeadtoHead(Team1,Team2,Team3,Team4,data=scores),HeadtoHead(Team2,Team1,Team3,Team4,data=scores),
-            HeadtoHead(Team3,Team1,Team2,Team4,data=scores),HeadtoHead(Team4,Team1,Team2,Team3,data=scores))
+  tmp2 <- c(HeadtoHead(Team1,Team2,Team3,Team4,data=scores,SimScores),HeadtoHead(Team2,Team1,Team3,Team4,data=scores,SimScores),
+            HeadtoHead(Team3,Team1,Team2,Team4,data=scores,SimScores),HeadtoHead(Team4,Team1,Team2,Team3,data=scores,SimScores))
   dt <- sapply(tmp2,function(x){ifelse(x==3,1,ifelse(x==-3,4,1))})
   tmp2 <- (tmp$ConfWins+0.5*tmp$ConfTies)/(tmp$ConfWins+tmp$ConfLosses+tmp$ConfTies)
   dt <- if (sum(dt)!=4) {dt} else {rank(-tmp2,ties.method="min")}
-  tmp2 <- c(CommonGames(Team1,Team2,Team3,Team4,data=scores),CommonGames(Team2,Team1,Team3,Team4,data=scores),
-            CommonGames(Team3,Team1,Team2,Team4,data=scores),CommonGames(Team4,Team1,Team2,Team3,data=scores))
+  tmp2 <- c(CommonGames(Team1,Team2,Team3,Team4,data=scores,SimScores),CommonGames(Team2,Team1,Team3,Team4,data=scores,SimScores),
+            CommonGames(Team3,Team1,Team2,Team4,data=scores,SimScores),CommonGames(Team4,Team1,Team2,Team3,data=scores,SimScores))
   dt <- if (sum(dt)!=4) {dt} else {rank(-tmp2,ties.method="min")}
   dt <- if (sum(dt)!=4) {dt} else {rank(-tmp$SOV,ties.method="min")}
   dt <- if (sum(dt)!=4) {dt} else {rank(-tmp$SOS,ties.method="min")}
@@ -523,6 +530,7 @@ FourTieConf <- function(Team1,Team2,Team3,Team4,scores,SimScores){
   du
 }
 #' @rdname Conference
+#' @export
 FinalRank <- function(scores,SimScores=NULL){
   data=UpdateTeams(data=scores,SimScores)
   tmp <- FinalDivRank(scores=scores,SimScores)
@@ -536,9 +544,9 @@ FinalRank <- function(scores,SimScores=NULL){
       mutate(ConfRnk=Rank+Rnk,Rank=Rank+Rnk)
     tmp3 <- tmp3 %>%
       nest(-Conference,-ConfRnk) %>%
-      mutate(CRank=lapply(data,function(x){if(nrow(x)==4) {FourTieConf(x$Team[1],x$Team[2],x$Team[3],x$Team[4],scores=scores)+x$Rank[1]-1} else
-        if(nrow(x)==3) {ThreeTieConf(x$Team[1],x$Team[2],x$Team[3],scores=scores)+x$Rank[1]-1} else
-          if(nrow(x)==2) {TwoTieConf(x$Team[1],x$Team[2],scores=scores)+x$Rank[1]-1} else
+      mutate(CRank=lapply(data,function(x){if(nrow(x)==4) {FourTieConf(x$Team[1],x$Team[2],x$Team[3],x$Team[4],scores=scores,SimScores)+x$Rank[1]-1} else
+        if(nrow(x)==3) {ThreeTieConf(x$Team[1],x$Team[2],x$Team[3],scores=scores,SimScores)+x$Rank[1]-1} else
+          if(nrow(x)==2) {TwoTieConf(x$Team[1],x$Team[2],scores=scores,SimScores)+x$Rank[1]-1} else
             x$Rank}))
     tmp3 <- tmp3 %>% unnest() %>% mutate(Rank=CRank) %>% select(-CRank,-ConfRnk,-Rnk)
     tmp2 <- tmp3
