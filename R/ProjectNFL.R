@@ -563,7 +563,7 @@ FourTieConf <- function(Team1,Team2,Team3,Team4,scores,SimScores){
 #' @rdname Conference
 FinalRank <- function(scores,SimScores=NULL){
   data=UpdateTeams(data=scores,SimScores)
-  tmp <- FinalDivRank(scores=scores)
+  tmp <- FinalDivRank(data=scores,SimScores)
   tmp$DivRank2 <- sapply(tmp$DivRank,function(x){min(x,2)})
   tmp2 <- tmp %>% nest(-Conference,-DivRank2)
   tmp2 <- tmp2 %>% mutate(Rank = lapply(data,function(x){rank(-(x$Wins+0.5*x$Ties)/(x$Wins+x$Losses+x$Ties),ties.method="min")+
