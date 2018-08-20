@@ -395,7 +395,7 @@ ThreeTieDiv <- function(Team1,Team2,Team3,scores,SimScores=NULL){
   dt <- if (sum(dt)!=3) {dt} else {rank(-tmp$SOS,ties.method="min")}
   du <- dt
   if (length(which(du==1))==2){
-    du[du==1]<-TwoTieDiv((c(Team1,Team2,Team3)[du==2])[1],(c(Team1,Team2,Team3)[du==2])[2],scores,SimScores)   
+    du[du==1]<-TwoTieDiv((c(Team1,Team2,Team3)[du==1])[1],(c(Team1,Team2,Team3)[du==1])[2],scores,SimScores)   
   } else if (length(which(du==2))==2){
     du[du==2]<-TwoTieDiv((c(Team1,Team2,Team3)[du==2])[1],(c(Team1,Team2,Team3)[du==2])[2],scores,SimScores)+1
   } else {du <- du}
