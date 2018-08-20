@@ -394,7 +394,7 @@ ThreeTieDiv <- function(Team1,Team2,Team3,scores,SimScores=NULL){
   dt <- if (sum(dt)!=3) {dt} else {rank(-tmp$SOV,ties.method="min")}
   dt <- if (sum(dt)!=3) {dt} else {rank(-tmp$SOS,ties.method="min")}
   du <- dt
-  du[du==2]<-TwoTieDiv((c(Team1,Team2,Team3)[x==2])[1],(c(Team1,Team2,Team3)[x==2])[2],scores,SimScores)+1
+  du[du==2]<-TwoTieDiv((c(Team1,Team2,Team3)[du==2])[1],(c(Team1,Team2,Team3)[du==2])[2],scores,SimScores)+1
   du
 }
 #' @rdname Division
@@ -412,8 +412,8 @@ FourTieDiv <- function(Team1,Team2,Team3,Team4,scores,SimScores=NULL){
   dt <- if (sum(dt)!=4) {dt} else {rank(-tmp$SOV,ties.method="min")}
   dt <- if (sum(dt)!=4) {dt} else {rank(-tmp$SOS,ties.method="min")}
   du <- dt
-  du[du==2]<-ThreeTieDiv((c(Team1,Team2,Team3)[x==2])[1],(c(Team1,Team2,Team3)[x==2])[2],
-                         (c(Team1,Team2,Team3)[x==2])[3],scores,SimScores)+1
+  du[du==2]<-ThreeTieDiv((c(Team1,Team2,Team3)[du==2])[1],(c(Team1,Team2,Team3)[du==2])[2],
+                         (c(Team1,Team2,Team3)[du==2])[3],scores,SimScores)+1
   du
 }
 #' @rdname Division
