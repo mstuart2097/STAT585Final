@@ -567,7 +567,7 @@ FinalRank <- function(scores,SimScores=NULL){
     tmp2 <- tmp3
   }
   tmp2 <- tmp2 %>% mutate(ConfRank=Rank) %>% select(-Rank)
-  tmp2 <- tmp2[,c(1,22,2:21)]
+  tmp2 <- tmp2[,c(1,16,2:15)]
   tmp2
 }
 
